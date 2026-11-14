@@ -60,6 +60,10 @@ Challenge reference brief: [`in md file of 10 pages.md`](in%20md%20file%20of%201
 | C | `src/features/bodymap/**` — 3D map & severity colors |
 | D | trends, guidance, onboarding, README / demo polish |
 
+## 3D model credit
+
+Body map uses [“3D human body wireframe model”](https://sketchfab.com/3d-models/3d-human-body-wireframe-model-66f684f022fb47ef9e22eaae406b231e) by [Syed Mohammad Hasan](https://sketchfab.com/HasanXRFX), licensed under [CC-BY-4.0](http://creativecommons.org/licenses/by/4.0/). Files live in `public/models/human-wireframe/`.
+
 ## Disclaimer
 
 AetherHealth is an educational Space Apps prototype. Thresholds are illustrative and **not** clinical or flight-surgeon protocol.

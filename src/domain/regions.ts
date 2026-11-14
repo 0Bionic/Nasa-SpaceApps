@@ -8,7 +8,7 @@ export interface BodyRegionDefinition {
   functionNote: string;
   indicators: HealthIndicatorId[];
   hazards: HazardId[];
-  /** Approximate 3D hit-target position on stylized avatar */
+  /** Hit-target position on the wireframe human (units match AvatarShell) */
   position: [number, number, number];
 }
 
@@ -22,7 +22,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
       'Fluid shifts toward the head in microgravity can raise intracranial and intraocular pressure, contributing to SANS.',
     indicators: ['mood', 'temp'],
     hazards: ['gravity', 'radiation'],
-    position: [0, 1.55, 0],
+    position: [0, 1.58, 0.16],
   },
   cardio: {
     id: 'cardio',
@@ -33,7 +33,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
       'Without gravity-driven hydrostatic gradients, the heart remolds and orthostatic tolerance declines.',
     indicators: ['hr', 'bp_sys', 'bp_dia', 'exercise_min'],
     hazards: ['gravity', 'closed_environment'],
-    position: [0, 1.05, 0.12],
+    position: [-0.07, 1.2, 0.14],
   },
   resp: {
     id: 'resp',
@@ -44,7 +44,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
       'Closed habitats require careful O₂/CO₂ balance; SpO₂ is a fast cabin-health proxy.',
     indicators: ['spo2'],
     hazards: ['closed_environment'],
-    position: [0, 1.15, 0],
+    position: [0.09, 1.26, 0.14],
   },
   msk: {
     id: 'msk',
@@ -55,7 +55,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
       'Unload bones and muscles atrophy quickly without resistive exercise protocols.',
     indicators: ['exercise_min'],
     hazards: ['gravity'],
-    position: [0, 0.45, 0],
+    position: [0, 0.55, 0.12],
   },
   skin_immune: {
     id: 'skin_immune',
@@ -66,7 +66,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
       'Spaceflight stressors reactivate latent viruses and alter immune surveillance.',
     indicators: ['temp', 'glucose'],
     hazards: ['radiation', 'closed_environment'],
-    position: [0.35, 0.95, 0],
+    position: [0.24, 1.05, 0.1],
   },
   behavioral: {
     id: 'behavioral',
@@ -77,7 +77,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
       'Distance and confinement amplify sleep loss and mood decline; early detection protects crew performance.',
     indicators: ['sleep_h', 'mood'],
     hazards: ['isolation', 'distance'],
-    position: [0, 1.7, 0],
+    position: [0, 1.82, 0],
   },
 };
 

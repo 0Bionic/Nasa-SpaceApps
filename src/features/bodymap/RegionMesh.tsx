@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
-import type { Mesh } from 'three';
+import type { Group } from 'three';
 import type { BodyRegionDefinition } from '@/domain/regions';
 import type { BodyRegionId, Severity } from '@/domain/types';
 
@@ -13,18 +13,20 @@ interface Props {
 }
 
 export function RegionMesh({ region, severity, selected, color, onSelect }: Props) {
-  const ref = useRef<Mesh>(null);
+  const ref = useRef<Group>(null);
 
   useFrame(({ clock }) => {
     if (!ref.current) return;
-    const base = selected ? 1.18 : 1;
+    const base = selected ? 1.15 : 1;
     const pulse =
-      severity === 'red' ? 1 + Math.sin(clock.elapsedTime * 4) * 0.08 : 1;
+      severity === 'red' ? 1 + Math.sin(clock.elapsedTime * 4) * 0.1 : 1;
     ref.current.scale.setScalar(base * pulse);
   });
 
+  const radius = selected ? 0.07 : 0.055;
+
   return (
-    <mesh
+    <group
       ref={ref}
       position={region.position}
       onClick={(e) => {
@@ -38,14 +40,22 @@ export function RegionMesh({ region, severity, selected, color, onSelect }: Prop
         document.body.style.cursor = 'auto';
       }}
     >
-      <sphereGeometry args={[selected ? 0.14 : 0.11, 20, 20]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={selected ? 0.85 : severity === 'red' ? 0.7 : 0.35}
-        transparent
-        opacity={0.92}
-      />
-    </mesh>
+      {/* solid core */}
+      <mesh>
+        <sphereGeometry args={[radius, 16, 16]} />
+        <meshStandardMaterial
+          color={color}
+          emissive={color}
+          emissiveIntensity={selected ? 0.95 : severity === 'red' ? 0.75 : 0.4}
+          transparent
+          opacity={0.95}
+        />
+      </mesh>
+      {/* wireframe halo matching body style */}
+      <mesh>
+        <sphereGeometry args={[radius * 1.45, 12, 10]} />
+        <meshBasicMaterial color={color} wireframe transparent opacity={0.55} />
+      </mesh>
+    </group>
   );
 }
