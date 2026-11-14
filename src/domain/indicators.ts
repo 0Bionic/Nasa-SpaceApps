@@ -28,7 +28,7 @@ export interface IndicatorDefinition {
 export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
   hr: {
     id: 'hr',
-    label: 'Heart Rate',
+    label: 'Heart rate',
     unit: 'bpm',
     description: 'Resting heart rate reflecting cardiovascular load and deconditioning.',
     howToMeasure: 'Sit quietly 2 minutes. Use a pulse oximeter, wearable, or count radial pulse for 60 seconds.',
@@ -101,7 +101,7 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
   },
   temp: {
     id: 'temp',
-    label: 'Core Temperature',
+    label: 'Core temperature',
     unit: '°C',
     description: 'Body temperature for infection and thermal stress screening.',
     howToMeasure: 'Use oral or tympanic thermometer; avoid measuring immediately after exercise.',
@@ -120,7 +120,7 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
   },
   glucose: {
     id: 'glucose',
-    label: 'Blood Glucose',
+    label: 'Blood glucose',
     unit: 'mg/dL',
     description: 'Capillary blood sugar for metabolic monitoring.',
     howToMeasure: 'Fingerstick with onboard glucometer; note time since last meal.',
@@ -139,7 +139,7 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
   },
   sleep_h: {
     id: 'sleep_h',
-    label: 'Sleep Duration',
+    label: 'Sleep duration',
     unit: 'h',
     description: 'Hours of sleep in the prior rest period.',
     howToMeasure: 'Log sleep from lights-out to wake, or sync actigraphy wearable.',
@@ -156,7 +156,7 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
   },
   mood: {
     id: 'mood',
-    label: 'Mood Score',
+    label: 'Mood score',
     unit: '/10',
     description: 'Subjective mood self-report (1 low – 10 high).',
     howToMeasure: 'Rate overall mood for the past 24 hours honestly; optional journal note.',

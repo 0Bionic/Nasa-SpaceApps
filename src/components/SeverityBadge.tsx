@@ -1,19 +1,10 @@
 import type { Severity } from '@/domain/types';
+import { SEVERITY_COLOR, SEVERITY_LABEL } from './vitals';
 
-const STYLES: Record<Severity, string> = {
-  green: 'bg-status-green/20 text-status-green border-status-green/40',
-  yellow: 'bg-status-yellow/20 text-status-yellow border-status-yellow/40',
-  amber: 'bg-status-amber/20 text-status-amber border-status-amber/40',
-  red: 'bg-status-red/20 text-status-red border-status-red/40',
-};
-
-const LABELS: Record<Severity, string> = {
-  green: 'Optimal',
-  yellow: 'Caution',
-  amber: 'Warning',
-  red: 'Critical',
-};
-
+/**
+ * Status tag. Severity is carried by a distinct glyph shape as well as
+ * color, so it stays readable for color-blind crew and in poor lighting.
+ */
 export function SeverityBadge({
   severity,
   size = 'md',
@@ -21,23 +12,43 @@ export function SeverityBadge({
   severity: Severity;
   size?: 'sm' | 'md';
 }) {
+  const color = SEVERITY_COLOR[severity];
   return (
     <span
-      className={`inline-flex items-center rounded-full border font-semibold uppercase tracking-wide ${STYLES[severity]} ${
-        size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-1 text-xs'
-      } ${severity === 'red' ? 'animate-pulse-critical' : ''}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border font-semibold ${
+        size === 'sm' ? 'px-2 py-0.5 text-2xs' : 'px-2.5 py-1 text-xs'
+      }`}
+      style={{
+        color,
+        borderColor: `${color}55`,
+        background: `${color}14`,
+      }}
     >
-      {LABELS[severity]}
+      <SeverityGlyph severity={severity} size={size === 'sm' ? 8 : 9} />
+      {SEVERITY_LABEL[severity]}
     </span>
   );
 }
 
+export function SeverityGlyph({ severity, size = 9 }: { severity: Severity; size?: number }) {
+  const c = SEVERITY_COLOR[severity];
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 10 10"
+      aria-hidden="true"
+      className={severity === 'red' ? 'animate-blink' : undefined}
+    >
+      {severity === 'green' && <circle cx="5" cy="5" r="4" fill={c} />}
+      {severity === 'yellow' && <rect x="1" y="1" width="8" height="8" rx="1" fill="none" stroke={c} strokeWidth="2" />}
+      {severity === 'amber' && <path d="M5 0.8 9.4 9H0.6Z" fill={c} />}
+      {severity === 'red' && <path d="M5 0 10 5 5 10 0 5Z" fill={c} />}
+    </svg>
+  );
+}
+
+export { SEVERITY_COLOR };
 export function severityColor(severity: Severity): string {
-  const map: Record<Severity, string> = {
-    green: '#22c55e',
-    yellow: '#eab308',
-    amber: '#f59e0b',
-    red: '#ef4444',
-  };
-  return map[severity];
+  return SEVERITY_COLOR[severity];
 }

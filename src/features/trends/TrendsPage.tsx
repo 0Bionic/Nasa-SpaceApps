@@ -1,145 +1,230 @@
 import { useMemo, useState } from 'react';
 import {
+  Area,
   CartesianGrid,
-  Legend,
+  ComposedChart,
   Line,
-  LineChart,
+  ReferenceArea,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
-  ReferenceArea,
 } from 'recharts';
 import { useAppStore } from '@/store/useAppStore';
+import { severityFor } from '@/domain/triage/engine';
+import { INDICATORS } from '@/domain/indicators';
+import type { HealthIndicatorId } from '@/domain/types';
+import { SeverityGlyph } from '@/components/SeverityBadge';
+import { INDICATOR_FIELD, SEVERITY_COLOR, formatValue, withUnit } from '@/components/vitals';
 
-type MetricKey = 'hr' | 'bpSys' | 'spo2' | 'sleepH' | 'mood' | 'temp';
+const METRICS: HealthIndicatorId[] = ['sleep_h', 'mood', 'hr', 'bp_sys', 'spo2', 'temp'];
 
-const METRICS: { key: MetricKey; label: string; color: string; greenMin: number; greenMax: number }[] = [
-  { key: 'hr', label: 'Heart rate', color: '#2dd4bf', greenMin: 50, greenMax: 90 },
-  { key: 'bpSys', label: 'Systolic BP', color: '#38bdf8', greenMin: 100, greenMax: 130 },
-  { key: 'spo2', label: 'SpO₂', color: '#a3e635', greenMin: 96, greenMax: 100 },
-  { key: 'sleepH', label: 'Sleep hours', color: '#c084fc', greenMin: 6.5, greenMax: 9 },
-  { key: 'mood', label: 'Mood', color: '#f472b6', greenMin: 7, greenMax: 10 },
-  { key: 'temp', label: 'Temp °C', color: '#fb923c', greenMin: 36.1, greenMax: 37.2 },
-];
+function greenBand(id: HealthIndicatorId): [number, number] {
+  const g = INDICATORS[id].bands.find((b) => b.severity === 'green')!;
+  return [g.min ?? 0, g.max ?? 0];
+}
 
 export function TrendsPage() {
   const history = useAppStore((s) => s.history);
   const [days, setDays] = useState<7 | 30>(30);
-  const [metric, setMetric] = useState<MetricKey>('sleepH');
+  const [metric, setMetric] = useState<HealthIndicatorId>('sleep_h');
 
-  const meta = METRICS.find((m) => m.key === metric)!;
+  const def = INDICATORS[metric];
+  const [gMin, gMax] = greenBand(metric);
+  const field = INDICATOR_FIELD[metric];
 
-  const data = useMemo(() => {
-    const slice = [...history].reverse().slice(-days);
-    return slice.map((c) => ({
-      day: new Date(c.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-      hr: c.hr,
-      bpSys: c.bpSys,
-      spo2: c.spo2,
-      sleepH: c.sleepH,
-      mood: c.mood,
-      temp: c.temp,
-      severity: c.overallSeverity,
-    }));
-  }, [history, days]);
+  const ordered = useMemo(() => [...history].reverse().slice(-days), [history, days]);
 
-  const anomalies = useMemo(() => {
+  const data = useMemo(
+    () =>
+      ordered.map((c) => {
+        const v = c[field] as number;
+        return {
+          day: new Date(c.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+          value: v,
+          sev: severityFor(metric, v),
+        };
+      }),
+    [ordered, field, metric],
+  );
+
+  const stats = useMemo(() => {
+    if (data.length === 0) return null;
+    const vals = data.map((d) => d.value);
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    const half = Math.floor(vals.length / 2);
+    const first = vals.slice(0, half);
+    const second = vals.slice(half);
+    const mean = (a: number[]) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0);
+    const delta = mean(second) - mean(first);
     let streak = 0;
-    let lastLabel = '';
-    for (const row of data) {
-      const v = row[metric];
-      if (v < meta.greenMin || v > meta.greenMax) {
-        streak += 1;
-        lastLabel = row.day;
-      } else {
-        streak = 0;
-      }
+    for (let i = data.length - 1; i >= 0; i--) {
+      if (data[i].sev === 'green') break;
+      streak += 1;
     }
-    return streak >= 3
-      ? `Persistent deviation: ${meta.label} outside green band for ${streak} consecutive days (ending ${lastLabel}).`
-      : null;
-  }, [data, metric, meta]);
+    return {
+      latest: data[data.length - 1],
+      avg,
+      delta,
+      inBand: data.filter((d) => d.sev === 'green').length,
+      streak,
+    };
+  }, [data]);
+
+  const lineColor = '#7FB2FF';
 
   return (
-    <div className="animate-fade-up space-y-6">
-      <div>
-        <h1 className="font-display text-2xl tracking-wide text-white">Trends</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          Longitudinal indicators with green-band reference — spot slow declines before they become critical.
+    <div className="space-y-7">
+      <header>
+        <h1 className="h-page">Trends</h1>
+        <p className="lede mt-2">
+          Slow drifts are easy to miss day to day. The shaded band is the safe range for each reading.
         </p>
+      </header>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="-mx-1 flex max-w-full gap-1 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Reading">
+          {METRICS.map((id) => {
+            const latestV = history[0] ? (history[0][INDICATOR_FIELD[id]] as number) : null;
+            const sev = latestV != null ? severityFor(id, latestV) : 'green';
+            const active = metric === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setMetric(id)}
+                className={`flex shrink-0 items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                  active ? 'border-limb/60 bg-deck text-star' : 'border-rule text-dust hover:border-rule-strong hover:text-star'
+                }`}
+              >
+                {INDICATORS[id].label}
+                {sev !== 'green' && <SeverityGlyph severity={sev} size={8} />}
+              </button>
+            );
+          })}
+        </div>
+        <div className="seg" role="group" aria-label="Time range">
+          {([7, 30] as const).map((d) => (
+            <button key={d} type="button" className="seg-item" aria-pressed={days === d} onClick={() => setDays(d)}>
+              {d} days
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {[7, 30].map((d) => (
-          <button
-            key={d}
-            type="button"
-            className={days === d ? 'btn-primary' : 'btn-ghost'}
-            onClick={() => setDays(d as 7 | 30)}
-          >
-            {d} days
-          </button>
-        ))}
-        {METRICS.map((m) => (
-          <button
-            key={m.key}
-            type="button"
-            className={metric === m.key ? 'btn-primary' : 'btn-ghost'}
-            onClick={() => setMetric(m.key)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
-
-      {anomalies && (
-        <div className="rounded-xl border border-status-amber/40 bg-status-amber/10 px-4 py-3 text-sm text-status-amber">
-          {anomalies}
+      {stats && stats.streak >= 3 && (
+        <div className="flex gap-3 rounded-lg border border-sev-amber/40 bg-sev-amber/10 px-4 py-3" role="status">
+          <span className="mt-1">
+            <SeverityGlyph severity="amber" />
+          </span>
+          <p className="text-sm text-[#FFD2A8]">
+            {def.label} has been outside the safe range for the last {stats.streak} check-ins. Look at the
+            guidance for this reading, and mention it in your next ground packet.
+          </p>
         </div>
       )}
 
-      <div className="panel p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-sm tracking-widest text-teal-soft">{meta.label}</h2>
-          <p className="text-xs text-slate-500">
-            Green band {meta.greenMin}–{meta.greenMax}
-          </p>
-        </div>
-        <div className="h-[340px] w-full">
+      <section className="surface p-4 sm:p-6" aria-label={`${def.label} chart`}>
+        {stats && (
+          <dl className="mb-6 grid grid-cols-2 gap-y-4 sm:grid-cols-4">
+            <Stat label="Latest" value={withUnit(metric, stats.latest.value)} color={stats.latest.sev === 'green' ? undefined : SEVERITY_COLOR[stats.latest.sev]} />
+            <Stat label={`${days}-day average`} value={withUnit(metric, stats.avg)} />
+            <Stat
+              label="Change over period"
+              value={`${stats.delta >= 0 ? '+' : '−'}${formatValue(metric, Math.abs(stats.delta))}`}
+            />
+            <Stat label="Days in safe range" value={`${stats.inBand} of ${data.length}`} />
+          </dl>
+        )}
+
+        <div className="h-[320px] w-full sm:h-[360px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
-              <CartesianGrid stroke="rgba(255,255,255,0.08)" />
-              <XAxis dataKey="day" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-              <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} domain={['auto', 'auto']} />
+            <ComposedChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+              <defs>
+                <linearGradient id="trend-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={lineColor} stopOpacity={0.22} />
+                  <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#22344F" strokeDasharray="0" vertical={false} />
+              <ReferenceArea ifOverflow="hidden" y1={gMin} y2={gMax} fill="#3CCB8A" fillOpacity={0.08} stroke="#3CCB8A" strokeOpacity={0.25} strokeDasharray="3 4" />
+              <XAxis
+                dataKey="day"
+                stroke="#33496A"
+                tick={{ fill: '#8D9DB5', fontSize: 11 }}
+                tickLine={false}
+                axisLine={{ stroke: '#33496A' }}
+                minTickGap={24}
+              />
+              <YAxis
+                stroke="#33496A"
+                tick={{ fill: '#8D9DB5', fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                domain={['auto', 'auto']}
+                width={44}
+              />
               <Tooltip
-                contentStyle={{
-                  background: '#0a1628',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 12,
+                cursor={{ stroke: '#7FB2FF', strokeOpacity: 0.4 }}
+                content={({ active, payload, label }) => {
+                  if (!active || !payload?.length) return null;
+                  const p = payload[0].payload as (typeof data)[number];
+                  return (
+                    <div className="rounded-md border border-rule-strong bg-deck px-3 py-2 text-xs shadow-lg">
+                      <p className="text-dust">{label}</p>
+                      <p className="readout mt-0.5 text-base" style={{ color: p.sev === 'green' ? '#E6ECF5' : SEVERITY_COLOR[p.sev] }}>
+                        {withUnit(metric, p.value)}
+                      </p>
+                    </div>
+                  );
                 }}
               />
-              <Legend />
-              <ReferenceArea
-                y1={meta.greenMin}
-                y2={meta.greenMax}
-                fill="#22c55e"
-                fillOpacity={0.08}
-              />
+              <Area type="monotone" dataKey="value" stroke="none" fill="url(#trend-fill)" isAnimationActive={false} />
               <Line
                 type="monotone"
-                dataKey={metric}
-                name={meta.label}
-                stroke={meta.color}
-                strokeWidth={2.5}
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-                animationDuration={700}
+                dataKey="value"
+                name={def.label}
+                stroke={lineColor}
+                strokeWidth={2}
+                dot={(props: { cx?: number; cy?: number; payload?: { sev: keyof typeof SEVERITY_COLOR }; index?: number }) => {
+                  const { cx, cy, payload, index } = props;
+                  if (cx == null || cy == null || !payload) return <g key={index} />;
+                  const off = payload.sev !== 'green';
+                  return (
+                    <circle
+                      key={index}
+                      cx={cx}
+                      cy={cy}
+                      r={off ? 3.5 : 2}
+                      fill={off ? SEVERITY_COLOR[payload.sev] : '#0A1322'}
+                      stroke={off ? '#0A1322' : lineColor}
+                      strokeWidth={off ? 1.5 : 1.25}
+                    />
+                  );
+                }}
+                activeDot={{ r: 5, fill: lineColor, stroke: '#0A1322', strokeWidth: 2 }}
+                animationDuration={600}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
-      </div>
+        <p className="mt-3 text-xs text-faint">
+          Safe range {gMin}–{gMax} {def.unit}. Colored points are readings outside it.
+        </p>
+      </section>
+    </div>
+  );
+}
+
+function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div>
+      <dt className="text-xs text-dust">{label}</dt>
+      <dd className="readout mt-1 text-xl" style={{ color }}>
+        {value}
+      </dd>
     </div>
   );
 }

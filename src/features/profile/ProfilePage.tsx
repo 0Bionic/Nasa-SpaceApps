@@ -4,12 +4,14 @@ import { updateProfile } from '@/data/repositories';
 import { downloadGroundPacket } from '@/data/exportPacket';
 import { useAppStore } from '@/store/useAppStore';
 import { BadgeShelf } from '@/features/gamification/BadgeShelf';
+import { IconCheck, IconExport } from '@/components/Icons';
+import { EARTH_DELAY } from '@/components/vitals';
 
 const ENVIRONMENTS: { id: MissionEnvironment; label: string; blurb: string }[] = [
-  { id: 'spacecraft', label: 'Spacecraft', blurb: 'Transit vehicle / capsule' },
-  { id: 'station', label: 'Space station', blurb: 'Orbital habitat (ISS-like)' },
-  { id: 'rover', label: 'Rover', blurb: 'Surface mobility cabin' },
-  { id: 'surface_base', label: 'Surface base', blurb: 'Lunar or planetary habitat' },
+  { id: 'station', label: 'Orbital station', blurb: 'A habitat in low Earth orbit' },
+  { id: 'spacecraft', label: 'Transit vehicle', blurb: 'A capsule or ship between worlds' },
+  { id: 'surface_base', label: 'Surface base', blurb: 'A lunar or planetary habitat' },
+  { id: 'rover', label: 'Surface rover', blurb: 'A pressurized mobility cabin' },
 ];
 
 export function ProfilePage() {
@@ -37,86 +39,95 @@ export function ProfilePage() {
     await updateProfile({ name, role, missionDay, environment });
     await refresh();
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 2400);
   };
 
   return (
-    <div className="animate-fade-up mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="font-display text-2xl tracking-wide text-white">Crew profile</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          Environment adjusts reminder framing and mission narrative for multi-habitat ops.
+    <div className="space-y-12">
+      <header>
+        <h1 className="h-page">Crew profile</h1>
+        <p className="lede mt-2">
+          Your habitat sets how far you are from help, which shapes the reminders and escalation advice you get.
         </p>
-      </div>
+      </header>
 
-      <form onSubmit={onSubmit} className="panel space-y-4 p-5">
-        <div>
-          <label className="label" htmlFor="name">
-            Astronaut name
-          </label>
-          <input
-            id="name"
-            className="input-field"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="role">
-            Role
-          </label>
-          <input
-            id="role"
-            className="input-field"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <label className="label" htmlFor="day">
-            Mission day
-          </label>
-          <input
-            id="day"
-            type="number"
-            min={1}
-            className="input-field"
-            value={missionDay}
-            onChange={(e) => setMissionDay(Number(e.target.value))}
-            required
-          />
-        </div>
-        <div>
-          <p className="label">Environment</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {ENVIRONMENTS.map((env) => (
-              <button
-                key={env.id}
-                type="button"
-                onClick={() => setEnvironment(env.id)}
-                className={`rounded-xl border px-3 py-3 text-left transition ${
-                  environment === env.id
-                    ? 'border-teal-glow bg-teal-glow/15'
-                    : 'border-white/10 bg-space-950/40 hover:border-white/25'
-                }`}
-              >
-                <span className="block font-semibold text-slate-100">{env.label}</span>
-                <span className="text-xs text-slate-400">{env.blurb}</span>
-              </button>
-            ))}
+      <form onSubmit={onSubmit} className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+        <div className="space-y-5">
+          <div>
+            <label className="field-label" htmlFor="name">
+              Name
+            </label>
+            <input id="name" className="field" value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="role">
+              Role
+            </label>
+            <input id="role" className="field" value={role} onChange={(e) => setRole(e.target.value)} required />
+          </div>
+          <div>
+            <label className="field-label" htmlFor="day">
+              Mission day
+            </label>
+            <input
+              id="day"
+              type="number"
+              min={1}
+              className="field readout max-w-[160px]"
+              value={missionDay}
+              onChange={(e) => setMissionDay(Number(e.target.value))}
+              required
+            />
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="submit" className="btn-primary">
-            Save profile
-          </button>
-          <button type="button" className="btn-ghost" onClick={() => downloadGroundPacket()}>
-            Export FHIR-lite packet
-          </button>
-          {saved && <span className="self-center text-sm text-teal-soft">Saved</span>}
-        </div>
+
+        <fieldset>
+          <legend className="field-label">Habitat</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {ENVIRONMENTS.map((env) => {
+              const on = environment === env.id;
+              return (
+                <label
+                  key={env.id}
+                  className={`relative flex cursor-pointer flex-col rounded-lg border px-4 py-3.5 transition-colors ${
+                    on ? 'border-limb/70 bg-deck' : 'border-rule bg-hull hover:border-rule-strong'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="environment"
+                    value={env.id}
+                    checked={on}
+                    onChange={() => setEnvironment(env.id)}
+                    className="peer sr-only"
+                  />
+                  <span className="pointer-events-none absolute inset-0 rounded-lg peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-limb" />
+                  <span className="text-sm font-semibold text-star">{env.label}</span>
+                  <span className="mt-0.5 text-xs text-dust">{env.blurb}</span>
+                  <span className="mt-3 text-xs text-faint">
+                    Earth delay <span className="readout text-dust">{EARTH_DELAY[env.id].value}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center gap-2">
+            <button type="submit" className="btn-primary">
+              Save profile
+            </button>
+            <button type="button" className="btn-quiet" onClick={() => downloadGroundPacket()}>
+              <IconExport width={16} height={16} />
+              Export ground packet
+            </button>
+            {saved && (
+              <span className="flex animate-rise items-center gap-1.5 text-sm text-sev-green" role="status">
+                <IconCheck width={16} height={16} />
+                Profile saved
+              </span>
+            )}
+          </div>
+        </fieldset>
       </form>
 
       <BadgeShelf badges={badges} />

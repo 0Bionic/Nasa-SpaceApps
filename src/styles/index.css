@@ -2,72 +2,161 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --status-green: #22c55e;
-  --status-yellow: #eab308;
-  --status-amber: #f59e0b;
-  --status-red: #ef4444;
-  --space-bg: #050b14;
-  --space-panel: #0a1628;
-  --teal: #2dd4bf;
-}
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
 
-html,
-body,
-#root {
-  min-height: 100%;
-}
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
 
-body {
-  margin: 0;
-  font-family: 'Exo 2', system-ui, sans-serif;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(45, 212, 191, 0.12), transparent),
-    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(56, 189, 248, 0.08), transparent),
-    linear-gradient(180deg, #050b14 0%, #0a1628 45%, #07101c 100%);
-  color: #e2e8f0;
-  background-attachment: fixed;
-}
+  body {
+    margin: 0;
+    font-family: 'Archivo', system-ui, sans-serif;
+    font-variation-settings: 'wdth' 100;
+    background-color: #0a1322;
+    color: #e6ecf5;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'tnum' 1, 'ss01' 1;
+  }
 
-/* Subtle starfield */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.45), transparent),
-    radial-gradient(1px 1px at 30% 80%, rgba(255, 255, 255, 0.35), transparent),
-    radial-gradient(1px 1px at 70% 30%, rgba(255, 255, 255, 0.4), transparent),
-    radial-gradient(1px 1px at 85% 70%, rgba(255, 255, 255, 0.3), transparent),
-    radial-gradient(1.5px 1.5px at 50% 50%, rgba(255, 255, 255, 0.25), transparent);
-  opacity: 0.55;
-  z-index: 0;
-}
+  ::selection {
+    background: rgba(127, 178, 255, 0.35);
+  }
 
-#root {
-  position: relative;
-  z-index: 1;
+  :focus-visible {
+    outline: 2px solid #7fb2ff;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
 }
 
 @layer components {
-  .panel {
-    @apply rounded-2xl border border-white/10 bg-space-900/70 backdrop-blur-md;
+  /* Width axis is the type system's expressive lever. */
+  .w-wide {
+    font-variation-settings: 'wdth' 118;
+  }
+  .w-xwide {
+    font-variation-settings: 'wdth' 125;
+  }
+  .w-narrow {
+    font-variation-settings: 'wdth' 82;
   }
 
+  .h-page {
+    @apply w-wide text-[1.75rem] font-semibold leading-[1.1] tracking-[-0.01em] text-star sm:text-[2.125rem];
+  }
+  .h-section {
+    @apply w-wide text-lg font-semibold leading-tight text-star;
+  }
+  .lede {
+    @apply max-w-[62ch] text-[0.9375rem] leading-relaxed text-dust;
+  }
+  .readout {
+    @apply w-xwide font-medium tabular-nums tracking-[-0.02em];
+  }
+
+  .surface {
+    @apply rounded-[10px] border border-rule bg-hull;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md px-4 py-2.5 text-sm font-semibold transition-[background-color,color,border-color,transform] duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50;
+  }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-teal-glow px-4 py-2.5 font-semibold text-space-950 transition hover:bg-teal-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-glow;
+    @apply btn bg-limb text-void hover:bg-[#9cc4ff];
+  }
+  .btn-quiet {
+    @apply btn border border-rule-strong text-star hover:border-limb/60 hover:bg-deck;
+  }
+  .btn-danger {
+    @apply btn bg-sev-red text-void hover:bg-[#ff7a7e];
   }
 
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 font-medium text-slate-100 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-glow/60;
+  .field {
+    @apply w-full rounded-md border border-rule bg-void px-3 py-2.5 text-star placeholder:text-faint transition-colors hover:border-rule-strong focus:border-limb focus:outline-none;
+  }
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-dust;
   }
 
-  .input-field {
-    @apply w-full rounded-xl border border-white/10 bg-space-950/60 px-3 py-2 text-slate-100 outline-none ring-teal-glow/40 transition focus:ring-2;
+  .seg {
+    @apply inline-flex rounded-md border border-rule bg-void p-0.5;
   }
+  .seg-item {
+    @apply rounded-[5px] px-3 py-1.5 text-sm font-medium text-dust transition-colors hover:text-star;
+  }
+  .seg-item[aria-pressed='true'] {
+    @apply bg-deck text-star shadow-[inset_0_0_0_1px_#33496a];
+  }
+}
 
-  .label {
-    @apply mb-1 block text-xs font-semibold uppercase tracking-wider text-slate-400;
+/* Body plate line-drawing */
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes nodeIn {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.plate-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.6s cubic-bezier(0.55, 0.1, 0.25, 1) forwards;
+}
+.plate-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: nodeIn 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) forwards;
+}
+.plate-fade {
+  opacity: 0;
+  animation: fadeIn 0.6s ease-out forwards;
+}
+.plate-sonar {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.plate-hit:focus {
+  outline: none;
+}
+.plate-hit:focus-visible .plate-focus {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .plate-sonar,
+  .animate-sonar {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  .animate-blink {
+    animation: none !important;
   }
 }
