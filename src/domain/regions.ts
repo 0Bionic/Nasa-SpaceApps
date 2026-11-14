@@ -8,7 +8,7 @@ export interface BodyRegionDefinition {
   functionNote: string;
   indicators: HealthIndicatorId[];
   hazards: HazardId[];
-  /** Hit-target position on the wireframe human (units match AvatarShell) */
+  /** Legacy 3D hotspot coords (unused by SVG BodyPlate; kept for domain stability) */
   position: [number, number, number];
 }
 

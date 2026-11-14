@@ -8,13 +8,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'models/human-wireframe/**/*'],
+      includeAssets: ['favicon.svg'],
       manifest: {
         name: 'AetherHealth',
         short_name: 'AetherHealth',
         description: 'Offline astronaut health monitoring for deep-space missions',
-        theme_color: '#0a1628',
-        background_color: '#0a1628',
+        theme_color: '#0A1322',
+        background_color: '#0A1322',
         display: 'standalone',
         orientation: 'any',
         start_url: '/',
@@ -32,9 +32,7 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Model textures exceed the default 2 MiB precache cap
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,gltf,bin}'],
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
     }),
   ],

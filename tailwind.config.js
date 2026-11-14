@@ -4,44 +4,44 @@ export default {
   theme: {
     extend: {
       colors: {
-        space: {
-          950: '#050b14',
-          900: '#0a1628',
-          800: '#12233d',
-          700: '#1a3355',
-          600: '#25456e',
-        },
-        teal: {
-          glow: '#2dd4bf',
-          soft: '#5eead4',
-        },
-        status: {
-          green: '#22c55e',
-          yellow: '#eab308',
-          amber: '#f59e0b',
-          red: '#ef4444',
+        void: '#0A1322',
+        hull: '#101C2F',
+        deck: '#16253B',
+        rule: '#22344F',
+        'rule-strong': '#33496A',
+        star: '#E6ECF5',
+        dust: '#8D9DB5',
+        faint: '#5C6E8A',
+        limb: '#7FB2FF',
+        'limb-deep': '#3F7BE0',
+        sev: {
+          green: '#3CCB8A',
+          yellow: '#EFCB45',
+          amber: '#FF9A3D',
+          red: '#FF5C61',
         },
       },
       fontFamily: {
-        display: ['"Orbitron"', 'system-ui', 'sans-serif'],
-        body: ['"Exo 2"', 'system-ui', 'sans-serif'],
+        sans: ['Archivo', 'system-ui', 'sans-serif'],
       },
-      boxShadow: {
-        glow: '0 0 24px rgba(45, 212, 191, 0.25)',
+      fontSize: {
+        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
       },
       keyframes: {
-        pulseCritical: {
-          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
-          '50%': { opacity: '0.7', transform: 'scale(1.04)' },
+        sonar: {
+          '0%': { transform: 'scale(1)', opacity: '0.7' },
+          '100%': { transform: 'scale(3.2)', opacity: '0' },
         },
-        fadeUp: {
-          '0%': { opacity: '0', transform: 'translateY(12px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+        blink: { '0%, 49%': { opacity: '1' }, '50%, 100%': { opacity: '0.25' } },
+        rise: {
+          from: { opacity: '0', transform: 'translateY(6px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
         },
       },
       animation: {
-        'pulse-critical': 'pulseCritical 1.4s ease-in-out infinite',
-        'fade-up': 'fadeUp 0.45s ease-out both',
+        sonar: 'sonar 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) infinite',
+        blink: 'blink 1.2s steps(1) infinite',
+        rise: 'rise 0.32s cubic-bezier(0.2, 0.7, 0.2, 1) both',
       },
     },
   },

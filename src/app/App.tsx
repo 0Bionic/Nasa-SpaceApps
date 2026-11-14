@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { Layout } from './Layout';
+import { BrandMark, Layout } from './Layout';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { CheckInPage } from '@/features/checkin/CheckInPage';
 import { TrendsPage } from '@/features/trends/TrendsPage';
@@ -29,9 +29,9 @@ export function App() {
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <p className="font-display text-2xl tracking-widest text-teal-glow">AetherHealth</p>
-          <p className="mt-2 text-sm text-slate-400">Initializing local health vault…</p>
+        <div className="flex flex-col items-center text-center" role="status">
+          <BrandMark size={40} />
+          <p className="mt-3 text-sm text-dust">Opening your on-device health record…</p>
         </div>
       </div>
     );
