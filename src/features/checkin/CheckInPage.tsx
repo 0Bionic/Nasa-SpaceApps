@@ -1,11 +1,19 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { INDICATORS } from '@/domain/indicators';
+import { BODY_REGION_LIST } from '@/domain/regions';
 import { overallSeverity, severityFor, triageCheckIn } from '@/domain/triage/engine';
-import type { CheckInInput, HealthIndicatorId, SymptomFlags } from '@/domain/types';
+import type {
+  BodyRegionId,
+  CheckInInput,
+  HealthIndicatorId,
+  RegionDiscomfortMap,
+  SymptomFlags,
+} from '@/domain/types';
 import { mockSensorSync, saveCheckIn } from '@/data/repositories';
 import { useAppStore } from '@/store/useAppStore';
 import { BandScale } from '@/components/BandScale';
+import { MedicalDisclaimer } from '@/components/Disclaimer';
 import { SeverityGlyph } from '@/components/SeverityBadge';
 import { IconCheck, IconSensor } from '@/components/Icons';
 import { INDICATOR_FIELD, SEVERITY_COLOR, SEVERITY_LABEL } from '@/components/vitals';
@@ -20,8 +28,14 @@ const defaults: CheckInInput = {
   sleepH: 7,
   mood: 7,
   exerciseMin: 45,
+  radiationMsv: 0.35,
+  cabinCo2Ppm: 900,
+  stress: 4,
+  fatigue: 4,
   notes: '',
   symptoms: { sansVisualChanges: false, rash: false, orthostaticDizziness: false },
+  regionDiscomfort: {},
+  photoDataUrl: '',
 };
 
 const GROUPS: { title: string; note: string; ids: HealthIndicatorId[] }[] = [
@@ -31,17 +45,33 @@ const GROUPS: { title: string; note: string; ids: HealthIndicatorId[] }[] = [
     ids: ['hr', 'bp_sys', 'bp_dia', 'spo2', 'temp', 'glucose'],
   },
   {
-    title: 'Recovery',
-    note: 'Since your last check-in.',
-    ids: ['sleep_h', 'mood', 'exercise_min'],
+    title: 'Recovery & behaviour',
+    note: 'Sleep, mood, stress, fatigue, and exercise countermeasures.',
+    ids: ['sleep_h', 'mood', 'stress', 'fatigue', 'exercise_min'],
+  },
+  {
+    title: 'Habitat & radiation',
+    note: 'Closed-environment and space-radiation records (study-guide hazards).',
+    ids: ['cabin_co2', 'radiation_msv'],
   },
 ];
 
-const STEP: Partial<Record<HealthIndicatorId, number>> = { temp: 0.1, sleep_h: 0.1 };
-const LIMITS: Partial<Record<HealthIndicatorId, [number, number]>> = { mood: [1, 10], spo2: [50, 100] };
+const STEP: Partial<Record<HealthIndicatorId, number>> = {
+  temp: 0.1,
+  sleep_h: 0.1,
+  radiation_msv: 0.01,
+};
+const LIMITS: Partial<Record<HealthIndicatorId, [number, number]>> = {
+  mood: [1, 10],
+  stress: [1, 10],
+  fatigue: [1, 10],
+  spo2: [50, 100],
+  radiation_msv: [0, 10],
+  cabin_co2: [200, 10000],
+};
 
 const SYMPTOMS: { key: keyof SymptomFlags; label: string; hint: string }[] = [
-  { key: 'sansVisualChanges', label: 'Changes in vision', hint: 'Blurring, a shadow, or trouble focusing near' },
+  { key: 'sansVisualChanges', label: 'Changes in vision', hint: 'Blurring, a shadow, or trouble focusing near (SANS watch)' },
   { key: 'rash', label: 'Skin rash', hint: 'New redness, itching, or irritation' },
   { key: 'orthostaticDizziness', label: 'Dizzy on standing', hint: 'Light-headed when you change posture' },
 ];
@@ -58,6 +88,30 @@ export function CheckInPage() {
 
   const setNum = (id: HealthIndicatorId, value: number) => {
     setForm((f) => ({ ...f, [INDICATOR_FIELD[id]]: value }));
+  };
+
+  const setDiscomfort = (id: BodyRegionId, level: number, note: string) => {
+    setForm((f) => {
+      const next: RegionDiscomfortMap = { ...(f.regionDiscomfort ?? {}) };
+      if (level <= 0 && !note.trim()) {
+        delete next[id];
+      } else {
+        next[id] = { level, note };
+      }
+      return { ...f, regionDiscomfort: next };
+    });
+  };
+
+  const onPhoto = async (file: File | null) => {
+    if (!file) {
+      setForm((f) => ({ ...f, photoDataUrl: '' }));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((f) => ({ ...f, photoDataUrl: String(reader.result ?? '') }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const onSubmit = async (e: FormEvent) => {
@@ -87,10 +141,9 @@ export function CheckInPage() {
     <form onSubmit={onSubmit} className="mx-auto max-w-[880px]">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="h-page">Daily check-in</h1>
+          <h1 className="h-page">Check-in</h1>
           <p className="lede mt-2">
-            Each scale shows the safe band. The marker moves as you type, so you can see where a
-            reading lands before you save.
+            Record vitals, habitat values, and symptoms. Bands show severity before you save.
           </p>
         </div>
         <div className="flex gap-2">
@@ -111,9 +164,13 @@ export function CheckInPage() {
         </div>
       </header>
 
+      <div className="mt-4">
+        <MedicalDisclaimer />
+      </div>
+
       {synced && (
-        <p className="mt-4 animate-rise text-sm text-dust" role="status">
-          Filled from the simulated wearable. Check each value before saving.
+        <p className="mt-4 text-sm text-dust" role="status">
+          Filled from mock sensors. Verify values before saving.
         </p>
       )}
 
@@ -123,7 +180,7 @@ export function CheckInPage() {
             <span className="h-section">{group.title}</span>
           </legend>
           <p className="mt-0.5 text-sm text-faint">{group.note}</p>
-          <div className="mt-3 divide-y divide-rule overflow-hidden rounded-[10px] border border-rule bg-hull">
+          <div className="mt-3 divide-y divide-rule overflow-hidden rounded border border-rule bg-hull">
             {group.ids.map((id) => (
               <InstrumentRow
                 key={id}
@@ -135,6 +192,47 @@ export function CheckInPage() {
           </div>
         </fieldset>
       ))}
+
+      <fieldset className="mt-8">
+        <legend className="h-section">Body map — discomfort</legend>
+        <p className="mt-0.5 text-sm text-faint">
+          Select a region and rate discomfort (0 none – 10 severe). This feeds the interactive body
+          plate on Status.
+        </p>
+        <div className="mt-3 space-y-2">
+          {BODY_REGION_LIST.map((region) => {
+            const entry = form.regionDiscomfort?.[region.id];
+            const level = entry?.level ?? 0;
+            return (
+              <div
+                key={region.id}
+                className="rounded-lg border border-rule bg-hull px-3 py-3 sm:grid sm:grid-cols-[140px_1fr_1fr] sm:items-center sm:gap-3"
+              >
+                <p className="text-sm font-semibold text-star">{region.shortLabel}</p>
+                <label className="mt-2 block text-xs text-dust sm:mt-0">
+                  Level {level}
+                  <input
+                    className="mt-1 w-full accent-[#105BD8]"
+                    type="range"
+                    min={0}
+                    max={10}
+                    value={level}
+                    onChange={(e) =>
+                      setDiscomfort(region.id, Number(e.target.value), entry?.note ?? '')
+                    }
+                  />
+                </label>
+                <input
+                  className="field mt-2 text-sm sm:mt-0"
+                  placeholder="Note (optional)"
+                  value={entry?.note ?? ''}
+                  onChange={(e) => setDiscomfort(region.id, level, e.target.value)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <fieldset className="mt-8">
         <legend className="h-section">Anything else today?</legend>
@@ -173,6 +271,25 @@ export function CheckInPage() {
           })}
         </div>
 
+        <label className="field-label mt-5" htmlFor="photo">
+          Camera / imaging attach (rash, eye, ultrasound still)
+        </label>
+        <input
+          id="photo"
+          className="field file:mr-3 file:rounded file:border-0 file:bg-deck file:px-3 file:py-1.5 file:text-sm file:text-star"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={(e) => void onPhoto(e.target.files?.[0] ?? null)}
+        />
+        {form.photoDataUrl && (
+          <img
+            src={form.photoDataUrl}
+            alt="Attached clinical observation"
+            className="mt-3 max-h-40 rounded-lg border border-rule object-contain"
+          />
+        )}
+
         <label className="field-label mt-5" htmlFor="notes">
           Notes for the flight surgeon
         </label>
@@ -186,14 +303,16 @@ export function CheckInPage() {
       </fieldset>
 
       {error && (
-        <p className="mt-4 rounded-md border border-sev-red/40 bg-sev-red/10 px-3 py-2 text-sm text-[#FFB3B5]" role="alert">
+        <p
+          className="mt-4 rounded-md border border-nasa-red/40 bg-nasa-red/10 px-3 py-2 text-sm text-[#FFB4A8]"
+          role="alert"
+        >
           {error}
         </p>
       )}
 
-      {/* Save bar with live status preview */}
       <div className="sticky bottom-[76px] z-20 mt-8 lg:bottom-4">
-        <div className="flex items-center justify-between gap-3 rounded-[10px] border border-rule-strong bg-deck/95 px-4 py-3 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.6)] backdrop-blur">
+        <div className="flex items-center justify-between gap-3 rounded border border-rule-strong bg-deck px-4 py-3">
           <p className="flex min-w-0 items-center gap-2 text-sm leading-snug text-dust" aria-live="polite">
             <SeverityGlyph severity={preview} size={10} />
             <span className="first-letter:uppercase">
@@ -261,7 +380,10 @@ function InstrumentRow({
 
       <div>
         <BandScale id={id} value={valid ? value : null} severity={sev} height={6} />
-        <p className="mt-1 flex items-center gap-1.5 text-xs" style={{ color: sev === 'green' ? '#8D9DB5' : SEVERITY_COLOR[sev] }}>
+        <p
+          className="mt-1 flex items-center gap-1.5 text-xs"
+          style={{ color: sev === 'green' ? '#A7B6CE' : SEVERITY_COLOR[sev] }}
+        >
           <SeverityGlyph severity={sev} size={8} />
           {SEVERITY_LABEL[sev]}
         </p>

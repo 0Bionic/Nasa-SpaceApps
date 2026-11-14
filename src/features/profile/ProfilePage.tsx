@@ -47,7 +47,7 @@ export function ProfilePage() {
       <header>
         <h1 className="h-page">Crew profile</h1>
         <p className="lede mt-2">
-          Your habitat sets how far you are from help, which shapes the reminders and escalation advice you get.
+          Habitat sets the Earth delay shown in the sidebar. Reminder toggle lives under Routines.
         </p>
       </header>
 
@@ -121,12 +121,19 @@ export function ProfilePage() {
               Export ground packet
             </button>
             {saved && (
-              <span className="flex animate-rise items-center gap-1.5 text-sm text-sev-green" role="status">
+              <span className="flex items-center gap-1.5 text-sm text-sev-green" role="status">
                 <IconCheck width={16} height={16} />
-                Profile saved
+                Saved
               </span>
             )}
           </div>
+          <p className="mt-4 text-xs text-faint">
+            Health reminders:{' '}
+            <span className="text-dust">
+              {profile.remindersEnabled ? 'enabled' : 'off'}
+            </span>
+            . Toggle them on the Routines page.
+          </p>
         </fieldset>
       </form>
 

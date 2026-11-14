@@ -8,6 +8,7 @@ import type {
   RoutineCompletion,
   UnlockedBadge,
 } from '@/domain/types';
+import { normalizeCheckInInput } from '@/domain/types';
 import { db } from './db';
 import { ROUTINE_CATALOG } from './routines';
 import { DEFAULT_PROFILE_ID, ensureSeeded } from './seed';
@@ -20,11 +21,19 @@ export async function getActiveProfile(): Promise<CrewProfile> {
   await ensureSeeded();
   const profile = await db.profiles.get(DEFAULT_PROFILE_ID);
   if (!profile) throw new Error('Profile missing after seed');
+  // Backfill study-guide fields for older local profiles
+  if (typeof profile.remindersEnabled !== 'boolean') {
+    const next = { ...profile, remindersEnabled: false };
+    await db.profiles.put(next);
+    return next;
+  }
   return profile;
 }
 
 export async function updateProfile(
-  patch: Partial<Pick<CrewProfile, 'name' | 'role' | 'missionDay' | 'environment' | 'onboarded'>>,
+  patch: Partial<
+    Pick<CrewProfile, 'name' | 'role' | 'missionDay' | 'environment' | 'onboarded' | 'remindersEnabled'>
+  >,
 ): Promise<CrewProfile> {
   const profile = await getActiveProfile();
   const next: CrewProfile = {
@@ -41,7 +50,22 @@ export async function listCheckIns(limit = 90): Promise<CheckInRecord[]> {
   const rows = await db.checkIns.where('profileId').equals(profile.id).toArray();
   return rows
     .sort((a, b) => (a.timestamp < b.timestamp ? 1 : -1))
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((r) => ({
+      ...normalizeCheckInInput(r),
+      id: r.id,
+      profileId: r.profileId,
+      timestamp: r.timestamp,
+      symptoms: {
+        sansVisualChanges: !!r.symptoms?.sansVisualChanges,
+        rash: !!r.symptoms?.rash,
+        orthostaticDizziness: !!r.symptoms?.orthostaticDizziness,
+      },
+      notes: r.notes ?? '',
+      regionDiscomfort: r.regionDiscomfort ?? {},
+      photoDataUrl: r.photoDataUrl ?? '',
+      overallSeverity: r.overallSeverity,
+    }));
 }
 
 export async function getLatestCheckIn(): Promise<CheckInRecord | undefined> {
@@ -51,39 +75,34 @@ export async function getLatestCheckIn(): Promise<CheckInRecord | undefined> {
 
 export async function saveCheckIn(input: CheckInInput): Promise<CheckInRecord> {
   const profile = await getActiveProfile();
-  const results = triageCheckIn(input);
+  const normalized = normalizeCheckInInput(input);
+  const results = triageCheckIn(normalized);
   const record: CheckInRecord = {
     id: uid('checkin'),
     profileId: profile.id,
     timestamp: new Date().toISOString(),
-    hr: input.hr,
-    bpSys: input.bpSys,
-    bpDia: input.bpDia,
-    spo2: input.spo2,
-    temp: input.temp,
-    glucose: input.glucose,
-    sleepH: input.sleepH,
-    mood: input.mood,
-    exerciseMin: input.exerciseMin,
-    notes: input.notes ?? '',
+    ...normalized,
+    notes: normalized.notes ?? '',
     symptoms: {
-      sansVisualChanges: !!input.symptoms?.sansVisualChanges,
-      rash: !!input.symptoms?.rash,
-      orthostaticDizziness: !!input.symptoms?.orthostaticDizziness,
+      sansVisualChanges: !!normalized.symptoms?.sansVisualChanges,
+      rash: !!normalized.symptoms?.rash,
+      orthostaticDizziness: !!normalized.symptoms?.orthostaticDizziness,
     },
+    regionDiscomfort: normalized.regionDiscomfort ?? {},
+    photoDataUrl: normalized.photoDataUrl ?? '',
     overallSeverity: overallSeverity(results),
   };
 
   let xpGain = 25;
-  if (input.exerciseMin >= 45) xpGain += 15;
-  if (input.sleepH >= 6.5) xpGain += 10;
+  if (normalized.exerciseMin >= 45) xpGain += 15;
+  if (normalized.sleepH >= 6.5) xpGain += 10;
+  if (Object.keys(normalized.regionDiscomfort ?? {}).length) xpGain += 5;
 
   const newStreak = profile.streak + 1;
   const updated: CrewProfile = {
     ...profile,
     xp: profile.xp + xpGain,
     streak: newStreak,
-    missionDay: profile.missionDay + (profile.streak === 0 ? 0 : 0),
     updatedAt: new Date().toISOString(),
   };
 
@@ -105,8 +124,8 @@ export async function saveCheckIn(input: CheckInInput): Promise<CheckInRecord> {
   maybeUnlock('first_checkin');
   if (newStreak >= 3) maybeUnlock('streak_3');
   if (newStreak >= 7) maybeUnlock('streak_7');
-  if (input.exerciseMin >= 45) maybeUnlock('exercise_guardian');
-  if (input.sleepH >= 6.5 && input.sleepH <= 9) maybeUnlock('sleep_steward');
+  if (normalized.exerciseMin >= 45) maybeUnlock('exercise_guardian');
+  if (normalized.sleepH >= 6.5 && normalized.sleepH <= 9) maybeUnlock('sleep_steward');
 
   await db.transaction('rw', db.checkIns, db.profiles, db.badges, async () => {
     await db.checkIns.put(record);
@@ -128,10 +147,7 @@ export function badgeMeta(badgeId: string) {
 
 export async function getRoutineCompletions(missionDay: number): Promise<RoutineCompletion[]> {
   const profile = await getActiveProfile();
-  return db.routines
-    .where('[profileId+missionDay]')
-    .equals([profile.id, missionDay])
-    .toArray();
+  return db.routines.where('[profileId+missionDay]').equals([profile.id, missionDay]).toArray();
 }
 
 export async function toggleRoutine(routineId: string, missionDay: number): Promise<void> {
@@ -174,7 +190,7 @@ export async function setEnvironment(environment: MissionEnvironment): Promise<C
   return updateProfile({ environment });
 }
 
-/** Mock wearable sync — returns plausible morning vitals */
+/** Mock wearable + habitat monitor sync */
 export function mockSensorSync(): CheckInInput {
   return {
     hr: 68 + Math.floor(Math.random() * 8),
@@ -186,11 +202,17 @@ export function mockSensorSync(): CheckInInput {
     sleepH: Number((6 + Math.random() * 2.5).toFixed(1)),
     mood: 5 + Math.floor(Math.random() * 4),
     exerciseMin: 0,
-    notes: 'Synced from mock wearable / cuff suite.',
+    radiationMsv: Number((0.25 + Math.random() * 0.4).toFixed(2)),
+    cabinCo2Ppm: Math.round(700 + Math.random() * 900),
+    stress: 3 + Math.floor(Math.random() * 4),
+    fatigue: 3 + Math.floor(Math.random() * 4),
+    notes: 'Synced from mock wearable / cuff suite + cabin monitors.',
     symptoms: {
       sansVisualChanges: false,
       rash: false,
       orthostaticDizziness: false,
     },
+    regionDiscomfort: {},
+    photoDataUrl: '',
   };
 }

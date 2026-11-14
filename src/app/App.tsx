@@ -9,6 +9,10 @@ import { RoutinesPage } from '@/features/routines/RoutinesPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
 import { Onboarding } from '@/features/onboarding/Onboarding';
 import { useAppStore } from '@/store/useAppStore';
+import {
+  remindersPreferred,
+  scheduleInAppTick,
+} from '@/features/routines/reminders';
 
 export function App() {
   const ready = useAppStore((s) => s.ready);
@@ -26,12 +30,18 @@ export function App() {
     }
   }, [ready, profile]);
 
+  useEffect(() => {
+    if (ready && (profile?.remindersEnabled || remindersPreferred())) {
+      scheduleInAppTick();
+    }
+  }, [ready, profile?.remindersEnabled]);
+
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center text-center" role="status">
           <BrandMark size={40} />
-          <p className="mt-3 text-sm text-dust">Opening your on-device health record…</p>
+          <p className="mt-3 text-sm text-dust">Loading…</p>
         </div>
       </div>
     );

@@ -16,7 +16,11 @@ export type HealthIndicatorId =
   | 'glucose'
   | 'sleep_h'
   | 'mood'
-  | 'exercise_min';
+  | 'exercise_min'
+  | 'radiation_msv'
+  | 'cabin_co2'
+  | 'stress'
+  | 'fatigue';
 
 export type BodyRegionId =
   | 'head_eyes'
@@ -59,6 +63,14 @@ export interface SymptomFlags {
   orthostaticDizziness: boolean;
 }
 
+/** Per-region discomfort logged via body map / check-in (0 = none, 10 = severe). */
+export interface RegionDiscomfortEntry {
+  level: number;
+  note: string;
+}
+
+export type RegionDiscomfortMap = Partial<Record<BodyRegionId, RegionDiscomfortEntry>>;
+
 export interface CheckInInput {
   hr: number;
   bpSys: number;
@@ -69,8 +81,19 @@ export interface CheckInInput {
   sleepH: number;
   mood: number;
   exerciseMin: number;
+  /** Estimated daily radiation dose (mSv/day) — space radiation hazard. */
+  radiationMsv: number;
+  /** Cabin CO₂ partial pressure proxy in ppm — closed environment. */
+  cabinCo2Ppm: number;
+  /** Subjective stress 1–10 — isolation / behavioral. */
+  stress: number;
+  /** Subjective fatigue 1–10 — isolation / workload. */
+  fatigue: number;
   notes?: string;
   symptoms?: Partial<SymptomFlags>;
+  regionDiscomfort?: RegionDiscomfortMap;
+  /** Optional camera / imaging attach (data URL or empty). */
+  photoDataUrl?: string;
 }
 
 export interface CrewProfile {
@@ -82,6 +105,8 @@ export interface CrewProfile {
   xp: number;
   streak: number;
   onboarded: boolean;
+  /** Browser notification reminders enabled. */
+  remindersEnabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -92,6 +117,8 @@ export interface CheckInRecord extends CheckInInput {
   timestamp: string;
   symptoms: SymptomFlags;
   notes: string;
+  regionDiscomfort: RegionDiscomfortMap;
+  photoDataUrl: string;
   overallSeverity: Severity;
 }
 
@@ -133,4 +160,22 @@ export const SEVERITY_RANK: Record<Severity, number> = {
 
 export function maxSeverity(a: Severity, b: Severity): Severity {
   return SEVERITY_RANK[a] >= SEVERITY_RANK[b] ? a : b;
+}
+
+/** Fill defaults for older local records missing study-guide fields. */
+export function normalizeCheckInInput(input: Partial<CheckInInput> & Pick<
+  CheckInInput,
+  'hr' | 'bpSys' | 'bpDia' | 'spo2' | 'temp' | 'glucose' | 'sleepH' | 'mood' | 'exerciseMin'
+>): CheckInInput {
+  return {
+    ...input,
+    radiationMsv: input.radiationMsv ?? 0.35,
+    cabinCo2Ppm: input.cabinCo2Ppm ?? 800,
+    stress: input.stress ?? 5,
+    fatigue: input.fatigue ?? 5,
+    notes: input.notes ?? '',
+    symptoms: input.symptoms ?? {},
+    regionDiscomfort: input.regionDiscomfort ?? {},
+    photoDataUrl: input.photoDataUrl ?? '',
+  };
 }

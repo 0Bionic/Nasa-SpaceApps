@@ -19,19 +19,23 @@ import {
   withUnit,
 } from '@/components/vitals';
 import { downloadGroundPacket } from '@/data/exportPacket';
+import { MedicalDisclaimer } from '@/components/Disclaimer';
+import { unusualChange } from '@/domain/triage/engine';
+import type { HealthIndicatorId } from '@/domain/types';
 
 function summarySentence(counts: Record<Severity, number>): string {
   const act = counts.red + counts.amber;
   const watch = counts.yellow;
-  if (act === 0 && watch === 0) return 'Every reading is within limits.';
+  if (act === 0 && watch === 0) return 'All readings nominal.';
   const parts: string[] = [];
-  if (act > 0) parts.push(`${act} reading${act === 1 ? ' needs' : 's need'} action`);
-  if (watch > 0) parts.push(`${watch} ${act > 0 ? 'more ' : ''}to watch`);
-  return parts.join(', ') + '.';
+  if (act > 0) parts.push(`${act} require action`);
+  if (watch > 0) parts.push(`${watch} caution`);
+  return parts.join(' · ') + '.';
 }
 
 export function DashboardPage() {
   const latest = useAppStore((s) => s.latest);
+  const history = useAppStore((s) => s.history);
   const profile = useAppStore((s) => s.profile);
   const selected = useAppStore((s) => s.selectedRegion);
   const setSelected = useAppStore((s) => s.setSelectedRegion);
@@ -47,6 +51,23 @@ export function DashboardPage() {
     { green: 0, yellow: 0, amber: 0, red: 0 } as Record<Severity, number>,
   );
   const worst = alerts[0];
+  const previous = history[1];
+  const changeWatch = latest
+    ? (
+        [
+          'hr',
+          'spo2',
+          'mood',
+          'sleep_h',
+          'cabin_co2',
+          'radiation_msv',
+          'stress',
+          'fatigue',
+        ] as HealthIndicatorId[]
+      ).filter((id) =>
+        unusualChange(id, indicatorValue(latest, id) ?? 0, indicatorValue(previous, id)),
+      )
+    : [];
 
   // On narrow screens the detail panel sits below the map; bring it into view on selection.
   const detailRef = useRef<HTMLElement>(null);
@@ -69,18 +90,18 @@ export function DashboardPage() {
       {latest?.overallSeverity === 'red' && !criticalDismissed && worst && (
         <div
           role="alert"
-          className="flex flex-col gap-3 rounded-lg border border-sev-red/40 bg-[#2A1620] px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 rounded border border-nasa-red/45 bg-[#3A1210] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="flex gap-3">
             <span className="mt-1.5">
               <SeverityGlyph severity="red" size={11} />
             </span>
             <div>
-              <p className="font-semibold text-[#FFB3B5]">
+              <p className="font-semibold text-[#FFB4A8]">
                 {INDICATORS[worst.indicatorId].label} at {withUnit(worst.indicatorId, worst.value)} is past
                 the critical limit
               </p>
-              <p className="mt-0.5 text-sm text-[#E8B9BF]">
+              <p className="mt-0.5 text-sm text-[#F0C4BC]">
                 Follow the steps below and prepare a packet for the ground flight surgeon.
               </p>
             </div>
@@ -90,7 +111,7 @@ export function DashboardPage() {
               <IconExport width={16} height={16} />
               Export ground packet
             </button>
-            <button type="button" className="btn text-[#E8B9BF] hover:bg-white/5" onClick={dismissCritical}>
+            <button type="button" className="btn text-[#F0C4BC] hover:bg-white/5" onClick={dismissCritical}>
               Dismiss
             </button>
           </div>
@@ -112,6 +133,48 @@ export function DashboardPage() {
           </Link>
         </div>
       </header>
+
+      {latest && (
+        <section
+          className="grid gap-px overflow-hidden rounded border border-rule bg-rule sm:grid-cols-4"
+          aria-label="Habitat and radiation"
+        >
+          {(
+            [
+              ['spo2', 'Personal SpO₂'],
+              ['cabin_co2', 'Cabin CO₂'],
+              ['radiation_msv', 'Radiation dose'],
+              ['stress', 'Stress'],
+            ] as const
+          ).map(([id, label]) => {
+            const value = indicatorValue(latest, id);
+            const r = results.find((x) => x.indicatorId === id);
+            const sev = r?.severity ?? 'green';
+            return (
+              <div key={id} className="bg-hull px-4 py-3">
+                <p className="text-xs text-dust">{label}</p>
+                <p
+                  className="readout mt-1 text-xl"
+                  style={{ color: sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[sev] }}
+                >
+                  {value != null ? formatValue(id, value) : '–'}
+                  <span className="ml-1 text-xs font-normal text-faint">{INDICATORS[id].unit}</span>
+                </p>
+              </div>
+            );
+          })}
+        </section>
+      )}
+
+      {changeWatch.length > 0 && (
+        <div className="rounded border border-sev-yellow/40 bg-sev-yellow/10 px-3 py-2.5 text-sm text-dust">
+          <p className="font-medium text-star">Change vs last check-in</p>
+          <p className="mt-1">
+            {changeWatch.map((id) => INDICATORS[id].label).join(', ')} shifted past the early-warning
+            delta. Recheck or note in your next packet.
+          </p>
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
         <section className="surface relative p-4 sm:p-5" aria-labelledby="plate-title">
@@ -144,8 +207,8 @@ export function DashboardPage() {
               </h2>
               <p className="mt-1.5 text-sm text-dust">
                 {latest
-                  ? 'Open a reading for the reason and the steps to take, or pick a region on the body.'
-                  : 'Log your first readings to see your status on the body map.'}
+                  ? 'Select an alert or a body region for detail.'
+                  : 'No check-in yet. Use Check-in to log readings.'}
               </p>
               <div className="mt-5 space-y-2">
                 {alerts.map((a, i) => (
@@ -172,7 +235,7 @@ export function DashboardPage() {
               See trends
             </Link>
           </div>
-          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] border border-rule bg-rule sm:grid-cols-3">
+          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded border border-rule bg-rule sm:grid-cols-3">
             {INDICATOR_LIST.map((def) => {
               const value = indicatorValue(latest, def.id);
               const r = results.find((x) => x.indicatorId === def.id);
@@ -186,7 +249,7 @@ export function DashboardPage() {
                   <dd className="mt-1.5">
                     <span
                       className="readout text-[1.75rem] leading-none"
-                      style={{ color: sev === 'green' ? '#E6ECF5' : SEVERITY_COLOR[sev] }}
+                      style={{ color: sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[sev] }}
                     >
                       {value != null ? formatValue(def.id, value) : '–'}
                     </span>
@@ -201,6 +264,8 @@ export function DashboardPage() {
           </dl>
         </section>
       )}
+
+      <MedicalDisclaimer />
     </div>
   );
 }

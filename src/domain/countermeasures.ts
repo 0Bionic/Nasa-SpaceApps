@@ -99,6 +99,29 @@ const ACTIONS: Record<string, CountermeasureAction> = {
     description: 'Follow onboard emergency checklist immediately; notify CMO and prepare ground alert.',
     category: 'escalate',
   },
+  radiation_shelter: {
+    id: 'radiation_shelter',
+    tier: 1,
+    title: 'Radiation shelter / dose log',
+    description:
+      'Confirm shelter status if solar event; log dose, limit EVA, and review cumulative exposure with CMO.',
+    category: 'monitor',
+  },
+  co2_scrub: {
+    id: 'co2_scrub',
+    tier: 1,
+    title: 'ECLSS / CO₂ response',
+    description: 'Verify CO₂ scrubbers, relocate to a lower-CO₂ module if available, and recheck SpO₂.',
+    category: 'monitor',
+  },
+  stress_break: {
+    id: 'stress_break',
+    tier: 1,
+    title: 'Workload / stress break',
+    description:
+      'Take a protected 20-minute break, use a breathing reset, and defer non-critical tasks if ops allow.',
+    category: 'monitor',
+  },
 };
 
 const BY_INDICATOR: Record<HealthIndicatorId, Partial<Record<Severity, string[]>>> = {
@@ -147,6 +170,26 @@ const BY_INDICATOR: Record<HealthIndicatorId, Partial<Record<Severity, string[]>
     amber: ['resistive_ex', 'cycle_ex', 'vit_d'],
     red: ['resistive_ex', 'cmo_exam', 'vit_d'],
   },
+  radiation_msv: {
+    yellow: ['radiation_shelter', 'recheck_vitals'],
+    amber: ['radiation_shelter', 'cmo_exam', 'ground_packet'],
+    red: ['emergency_protocol', 'radiation_shelter', 'ground_packet'],
+  },
+  cabin_co2: {
+    yellow: ['co2_scrub', 'o2_cabin', 'recheck_vitals'],
+    amber: ['co2_scrub', 'cmo_exam', 'o2_cabin'],
+    red: ['emergency_protocol', 'co2_scrub', 'ground_packet'],
+  },
+  stress: {
+    yellow: ['stress_break', 'mood_check'],
+    amber: ['stress_break', 'mood_check', 'cmo_exam'],
+    red: ['cmo_exam', 'ground_packet', 'stress_break'],
+  },
+  fatigue: {
+    yellow: ['rest_block', 'sleep_hygiene'],
+    amber: ['rest_block', 'cmo_exam', 'sleep_hygiene'],
+    red: ['cmo_exam', 'ground_packet', 'rest_block'],
+  },
 };
 
 export function actionsFor(indicatorId: HealthIndicatorId, severity: Severity): CountermeasureAction[] {
@@ -163,8 +206,11 @@ export const GUIDANCE_LIBRARY: CountermeasureAction[] = [
   ACTIONS.sleep_hygiene,
   ACTIONS.rest_block,
   ACTIONS.mood_check,
+  ACTIONS.stress_break,
   ACTIONS.glucose_snack,
   ACTIONS.o2_cabin,
+  ACTIONS.co2_scrub,
+  ACTIONS.radiation_shelter,
   ACTIONS.cmo_exam,
   ACTIONS.sans_screen,
   ACTIONS.ground_packet,

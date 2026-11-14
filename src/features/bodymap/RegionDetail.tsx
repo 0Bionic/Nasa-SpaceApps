@@ -18,19 +18,31 @@ interface Props {
 export function RegionDetail({ regionId, checkIn, onClose }: Props) {
   const region = BODY_REGIONS[regionId];
   const results = checkIn ? triageCheckIn(checkIn) : [];
-  const severity = checkIn ? regionSeverity(regionId, results, checkIn.symptoms) : 'green';
+  const severity = checkIn
+    ? regionSeverity(regionId, results, checkIn.symptoms, checkIn.regionDiscomfort)
+    : 'green';
   const relevant = results.filter(
     (r) => region.indicators.includes(r.indicatorId) && r.severity !== 'green',
   );
 
   const flags: string[] = [];
-  if (checkIn?.symptoms.sansVisualChanges && regionId === 'head_eyes') flags.push('Visual changes reported (possible SANS)');
-  if (checkIn?.symptoms.rash && regionId === 'skin_immune') flags.push('Skin rash reported');
-  if (checkIn?.symptoms.orthostaticDizziness && (regionId === 'cardio' || regionId === 'msk'))
+  if (checkIn?.symptoms?.sansVisualChanges && regionId === 'head_eyes')
+    flags.push('Visual changes reported (possible SANS)');
+  if (checkIn?.symptoms?.rash && regionId === 'skin_immune') flags.push('Skin rash reported');
+  if (
+    checkIn?.symptoms?.orthostaticDizziness &&
+    (regionId === 'cardio' || regionId === 'msk')
+  )
     flags.push('Dizziness on standing reported');
+  const discomfort = checkIn?.regionDiscomfort?.[regionId];
+  if (discomfort && discomfort.level > 0) {
+    flags.push(
+      `Discomfort ${discomfort.level}/10${discomfort.note ? ` — ${discomfort.note}` : ''}`,
+    );
+  }
 
   return (
-    <aside key={regionId} className="animate-rise flex h-full flex-col" aria-label={`${region.label} details`}>
+    <aside key={regionId} className="flex h-full flex-col" aria-label={`${region.label} details`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="h-section">{region.label}</h2>
@@ -66,7 +78,7 @@ export function RegionDetail({ regionId, checkIn, onClose }: Props) {
             <div key={id} className="py-3">
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-sm text-dust">{def.label}</dt>
-                <dd className="readout text-base" style={{ color: sev === 'green' ? '#E6ECF5' : SEVERITY_COLOR[sev] }}>
+                <dd className="readout text-base" style={{ color: sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[sev] }}>
                   {value != null ? formatValue(id, value) : '–'}
                   <span className="ml-1 text-xs font-normal text-faint">{def.unit}</span>
                 </dd>

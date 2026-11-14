@@ -114,7 +114,7 @@ export interface RegionReading {
 export function regionReadings(checkIn: CheckInRecord | null | undefined) {
   const results: TriageResult[] = checkIn ? triageCheckIn(checkIn) : [];
   const severities = checkIn
-    ? allRegionSeverities(results, checkIn.symptoms)
+    ? allRegionSeverities(results, checkIn.symptoms, checkIn.regionDiscomfort)
     : (Object.fromEntries(BODY_REGION_LIST.map((r) => [r.id, 'green'])) as Record<BodyRegionId, Severity>);
 
   const out = {} as Record<BodyRegionId, RegionReading>;
@@ -171,42 +171,28 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
         role="group"
         aria-label="Body status map. Select a region to see its readings."
       >
-        <defs>
-          <radialGradient id="plate-glow" cx="50%" cy="38%" r="55%">
-            <stop offset="0%" stopColor="#7FB2FF" stopOpacity="0.09" />
-            <stop offset="100%" stopColor="#7FB2FF" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-
-        <ellipse cx={CX} cy={230} rx={190} ry={260} fill="url(#plate-glow)" />
-
         {/* centre axis */}
         <line
           x1={CX} y1={14} x2={CX} y2={500}
-          stroke="#22344F" strokeDasharray="2 5" className="plate-fade"
-          style={{ animationDelay: '0.2s' }}
+          stroke="#1A3F78" strokeDasharray="2 5"
         />
 
         {/* figure */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           <path
             d={BODY_PATH}
-            pathLength={1}
-            stroke="#A9BAD3"
+            stroke="#A7B6CE"
             strokeWidth={1.4}
-            className="plate-draw"
-            fill="#0F1B2E"
-            fillOpacity={0.6}
+            fill="#0B1E42"
+            fillOpacity={0.7}
           />
           <ellipse
             cx={CX} cy={58} rx={21} ry={26}
-            pathLength={1}
-            stroke="#A9BAD3"
+            stroke="#A7B6CE"
             strokeWidth={1.4}
-            className="plate-draw"
-            fill="#0F1B2E"
+            fill="#0B1E42"
           />
-          <g stroke="#5C6E8A" strokeWidth={1} className="plate-fade" style={{ animationDelay: '1.1s' }}>
+          <g stroke="#6F84A6" strokeWidth={1}>
             {DETAIL_PATHS.map((d) => (
               <path key={d} d={d} />
             ))}
@@ -215,7 +201,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
         </g>
 
         {/* regions */}
-        {ORDER.map((id, i) => {
+        {ORDER.map((id) => {
           const region = BODY_REGIONS[id];
           const { node, side } = ANCHORS[id];
           const reading = readings[id];
@@ -224,7 +210,6 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
           const lx = LABEL_X[side];
           const anchor = side === 'left' ? 'end' : 'start';
           const tx = side === 'left' ? lx - 10 : lx + 10;
-          const delay = 1.25 + i * 0.09;
 
           return (
             <g
@@ -235,27 +220,21 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
               aria-label={`${region.label}: ${SEVERITY_LABEL[reading.severity]}. ${reading.detail}`}
               onClick={() => onSelect(id)}
               onKeyDown={keyActivate(id)}
-              className="plate-hit group cursor-pointer"
+              className="plate-hit cursor-pointer"
             >
-              {/* leader line + label: desktop only */}
               {!compact && (
                 <>
                   <path
                     d={`M${node[0]},${node[1]} L${lx},${node[1]}`}
-                    pathLength={1}
-                    stroke={isSel ? color : '#33496A'}
+                    stroke={isSel ? color : '#2A5AA0'}
                     strokeWidth={isSel ? 1.4 : 1}
                     fill="none"
-                    className="plate-draw transition-[stroke] duration-200 group-hover:stroke-[#7FB2FF]"
-                    style={{ animationDelay: `${delay + 0.15}s`, animationDuration: '0.5s' }}
                   />
                   <circle
                     cx={lx} cy={node[1]} r={2}
-                    fill={isSel ? color : '#33496A'}
-                    className="plate-fade"
-                    style={{ animationDelay: `${delay + 0.5}s` }}
+                    fill={isSel ? color : '#2A5AA0'}
                   />
-                  <g className="plate-fade" style={{ animationDelay: `${delay + 0.55}s` }}>
+                  <g>
                     <rect
                       x={side === 'left' ? lx - 170 : lx}
                       y={node[1] - 26}
@@ -267,8 +246,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                       x={tx}
                       y={node[1] - 5}
                       textAnchor={anchor}
-                      className="fill-star text-[14px] font-semibold"
-                      style={{ fontVariationSettings: "'wdth' 112" }}
+                      className="fill-star text-[13px] font-semibold"
                     >
                       {region.label}
                     </text>
@@ -277,7 +255,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                       y={node[1] + 14}
                       textAnchor={anchor}
                       className="text-[12px]"
-                      fill={reading.severity === 'green' ? '#8D9DB5' : color}
+                      fill={reading.severity === 'green' ? '#A7B6CE' : color}
                     >
                       {reading.detail}
                     </text>
@@ -285,43 +263,23 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                 </>
               )}
 
-              {/* node */}
               <circle cx={node[0]} cy={node[1]} r={18} fill="transparent" />
-              {reading.severity === 'red' && (
+              <g>
                 <circle
-                  cx={node[0]} cy={node[1]} r={6}
-                  fill="none" stroke={color} strokeWidth={1.5}
-                  className="plate-sonar animate-sonar"
-                  style={{ animationDelay: `${delay + 0.4}s` }}
-                />
-              )}
-              <g className="plate-node" style={{ animationDelay: `${delay}s` }}>
-                <circle
-                  cx={node[0]} cy={node[1]} r={isSel ? 11 : 8.5}
-                  fill="#0A1322" fillOpacity={0.7}
+                  cx={node[0]} cy={node[1]} r={isSel ? 10 : 8}
+                  fill="#060F24" fillOpacity={0.85}
                   stroke={color} strokeWidth={isSel ? 2 : 1.25}
-                  className="transition-all duration-200"
                 />
-                <circle cx={node[0]} cy={node[1]} r={isSel ? 5 : 4} fill={color} className="transition-all duration-200" />
+                <circle cx={node[0]} cy={node[1]} r={isSel ? 4.5 : 3.5} fill={color} />
                 <circle
-                  cx={node[0]} cy={node[1]} r={15}
-                  fill="none" stroke="#7FB2FF" strokeWidth={1.5}
+                  cx={node[0]} cy={node[1]} r={14}
+                  fill="none" stroke="#5BA8FF" strokeWidth={1.5}
                   className="plate-focus opacity-0"
                 />
               </g>
             </g>
           );
         })}
-
-        {/* plate registration marks */}
-        {!compact && (
-          <g stroke="#33496A" strokeWidth={1} className="plate-fade" style={{ animationDelay: '0.1s' }}>
-            <path d="M8,22 V8 H22" fill="none" />
-            <path d="M578,8 H592 V22" fill="none" />
-            <path d="M8,488 V502 H22" fill="none" />
-            <path d="M578,502 H592 V488" fill="none" />
-          </g>
-        )}
       </svg>
 
       {/* compact: region list replaces callouts */}
@@ -349,7 +307,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                     </span>
                     <span
                       className="block truncate text-xs"
-                      style={{ color: r.severity === 'green' ? '#8D9DB5' : SEVERITY_COLOR[r.severity] }}
+                      style={{ color: r.severity === 'green' ? '#A7B6CE' : SEVERITY_COLOR[r.severity] }}
                     >
                       {r.detail}
                     </span>

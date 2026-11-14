@@ -17,7 +17,20 @@ import type { HealthIndicatorId } from '@/domain/types';
 import { SeverityGlyph } from '@/components/SeverityBadge';
 import { INDICATOR_FIELD, SEVERITY_COLOR, formatValue, withUnit } from '@/components/vitals';
 
-const METRICS: HealthIndicatorId[] = ['sleep_h', 'mood', 'hr', 'bp_sys', 'spo2', 'temp'];
+const METRICS: HealthIndicatorId[] = [
+  'sleep_h',
+  'mood',
+  'stress',
+  'fatigue',
+  'hr',
+  'bp_sys',
+  'spo2',
+  'temp',
+  'glucose',
+  'exercise_min',
+  'cabin_co2',
+  'radiation_msv',
+];
 
 function greenBand(id: HealthIndicatorId): [number, number] {
   const g = INDICATORS[id].bands.find((b) => b.severity === 'green')!;
@@ -71,14 +84,14 @@ export function TrendsPage() {
     };
   }, [data]);
 
-  const lineColor = '#7FB2FF';
+  const lineColor = '#5BA8FF';
 
   return (
     <div className="space-y-7">
       <header>
         <h1 className="h-page">Trends</h1>
         <p className="lede mt-2">
-          Slow drifts are easy to miss day to day. The shaded band is the safe range for each reading.
+          History for each indicator. Green band is the nominal range.
         </p>
       </header>
 
@@ -119,9 +132,9 @@ export function TrendsPage() {
           <span className="mt-1">
             <SeverityGlyph severity="amber" />
           </span>
-          <p className="text-sm text-[#FFD2A8]">
-            {def.label} has been outside the safe range for the last {stats.streak} check-ins. Look at the
-            guidance for this reading, and mention it in your next ground packet.
+          <p className="text-sm text-[#FFD4A0]">
+            {def.label} outside nominal for {stats.streak} check-ins. Review Guidance and note in the
+            next ground packet.
           </p>
         </div>
       )}
@@ -148,33 +161,33 @@ export function TrendsPage() {
                   <stop offset="100%" stopColor={lineColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#22344F" strokeDasharray="0" vertical={false} />
-              <ReferenceArea ifOverflow="hidden" y1={gMin} y2={gMax} fill="#3CCB8A" fillOpacity={0.08} stroke="#3CCB8A" strokeOpacity={0.25} strokeDasharray="3 4" />
+              <CartesianGrid stroke="#1A3F78" strokeDasharray="0" vertical={false} />
+              <ReferenceArea ifOverflow="hidden" y1={gMin} y2={gMax} fill="#4AA564" fillOpacity={0.08} stroke="#4AA564" strokeOpacity={0.25} strokeDasharray="3 4" />
               <XAxis
                 dataKey="day"
-                stroke="#33496A"
-                tick={{ fill: '#8D9DB5', fontSize: 11 }}
+                stroke="#2A5AA0"
+                tick={{ fill: '#A7B6CE', fontSize: 11 }}
                 tickLine={false}
-                axisLine={{ stroke: '#33496A' }}
+                axisLine={{ stroke: '#2A5AA0' }}
                 minTickGap={24}
               />
               <YAxis
-                stroke="#33496A"
-                tick={{ fill: '#8D9DB5', fontSize: 11 }}
+                stroke="#2A5AA0"
+                tick={{ fill: '#A7B6CE', fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
                 domain={['auto', 'auto']}
                 width={44}
               />
               <Tooltip
-                cursor={{ stroke: '#7FB2FF', strokeOpacity: 0.4 }}
+                cursor={{ stroke: '#5BA8FF', strokeOpacity: 0.4 }}
                 content={({ active, payload, label }) => {
                   if (!active || !payload?.length) return null;
                   const p = payload[0].payload as (typeof data)[number];
                   return (
                     <div className="rounded-md border border-rule-strong bg-deck px-3 py-2 text-xs shadow-lg">
                       <p className="text-dust">{label}</p>
-                      <p className="readout mt-0.5 text-base" style={{ color: p.sev === 'green' ? '#E6ECF5' : SEVERITY_COLOR[p.sev] }}>
+                      <p className="readout mt-0.5 text-base" style={{ color: p.sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[p.sev] }}>
                         {withUnit(metric, p.value)}
                       </p>
                     </div>
@@ -198,13 +211,13 @@ export function TrendsPage() {
                       cx={cx}
                       cy={cy}
                       r={off ? 3.5 : 2}
-                      fill={off ? SEVERITY_COLOR[payload.sev] : '#0A1322'}
-                      stroke={off ? '#0A1322' : lineColor}
+                      fill={off ? SEVERITY_COLOR[payload.sev] : '#060F24'}
+                      stroke={off ? '#060F24' : lineColor}
                       strokeWidth={off ? 1.5 : 1.25}
                     />
                   );
                 }}
-                activeDot={{ r: 5, fill: lineColor, stroke: '#0A1322', strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: lineColor, stroke: '#060F24', strokeWidth: 2 }}
                 animationDuration={600}
               />
             </ComposedChart>

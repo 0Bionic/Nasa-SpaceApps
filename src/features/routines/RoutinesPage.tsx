@@ -1,8 +1,14 @@
+import { useState } from 'react';
 import { ROUTINE_CATALOG } from '@/data/routines';
-import { toggleRoutine } from '@/data/repositories';
+import { toggleRoutine, updateProfile } from '@/data/repositories';
 import { useAppStore } from '@/store/useAppStore';
 import { BadgeShelf } from '@/features/gamification/BadgeShelf';
 import { IconCheck } from '@/components/Icons';
+import {
+  disableHealthReminders,
+  enableHealthReminders,
+  remindersPreferred,
+} from '@/features/routines/reminders';
 
 const SLOTS = [
   { id: 'wake', label: 'After waking' },
@@ -15,12 +21,33 @@ export function RoutinesPage() {
   const done = useAppStore((s) => s.routineDoneIds);
   const refresh = useAppStore((s) => s.refresh);
   const badges = useAppStore((s) => s.badges);
+  const [reminderMsg, setReminderMsg] = useState('');
 
   if (!profile) return null;
 
   const onToggle = async (routineId: string) => {
     await toggleRoutine(routineId, profile.missionDay);
     await refresh();
+  };
+
+  const onReminders = async () => {
+    if (remindersPreferred() || profile.remindersEnabled) {
+      disableHealthReminders();
+      await updateProfile({ remindersEnabled: false });
+      await refresh();
+      setReminderMsg('Reminders off.');
+      return;
+    }
+    const result = await enableHealthReminders();
+    if (result === 'granted') {
+      await updateProfile({ remindersEnabled: true });
+      await refresh();
+      setReminderMsg('Reminders on — wake, midday, and pre-sleep while the app is open.');
+    } else if (result === 'denied') {
+      setReminderMsg('Notification permission denied. You can still use the checklist.');
+    } else {
+      setReminderMsg('Notifications are not supported in this browser.');
+    }
   };
 
   const completed = done.length;
@@ -35,25 +62,33 @@ export function RoutinesPage() {
         <div>
           <h1 className="h-page">Routines</h1>
           <p className="lede mt-2">
-            Today's countermeasures for mission day {profile.missionDay}. Small, steady habits protect bone,
-            heart and sleep over a long mission.
+            Countermeasure checklist for mission day {profile.missionDay}. Optional reminders fire while
+            the app is open.
           </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <button type="button" className="btn-quiet" onClick={() => void onReminders()}>
+              {remindersPreferred() || profile.remindersEnabled
+                ? 'Disable reminders'
+                : 'Enable health reminders'}
+            </button>
+            {reminderMsg && <p className="text-xs text-dust">{reminderMsg}</p>}
+          </div>
         </div>
         <div className="flex items-center gap-4">
           <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
-            <circle cx="42" cy="42" r={R} fill="none" stroke="#22344F" strokeWidth="6" />
+            <circle cx="42" cy="42" r={R} fill="none" stroke="#1A3F78" strokeWidth="6" />
             <circle
               cx="42"
               cy="42"
               r={R}
               fill="none"
-              stroke={pct === 1 ? '#3CCB8A' : '#7FB2FF'}
+              stroke={pct === 1 ? '#4AA564' : '#105BD8'}
               strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={C}
               strokeDashoffset={C * (1 - pct)}
               transform="rotate(-90 42 42)"
-              className="transition-[stroke-dashoffset,stroke] duration-700 ease-[cubic-bezier(.2,.8,.2,1)]"
+              className="transition-[stroke-dashoffset,stroke] duration-200"
             />
           </svg>
           <div>
@@ -107,7 +142,7 @@ export function RoutinesPage() {
                               isDone ? 'scale-100 border-sev-green bg-sev-green text-void' : 'border-rule-strong'
                             }`}
                           >
-                            {isDone && <IconCheck width={14} height={14} strokeWidth={2.4} className="animate-rise" />}
+                            {isDone && <IconCheck width={14} height={14} strokeWidth={2.4} />}
                           </span>
                           <span>
                             <span className={`block text-sm font-semibold transition-colors ${isDone ? 'text-dust line-through decoration-faint' : 'text-star'}`}>

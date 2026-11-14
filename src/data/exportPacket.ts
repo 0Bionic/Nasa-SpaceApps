@@ -51,7 +51,21 @@ export async function buildGroundPacket() {
                     })),
                   ),
                 },
-              ],
+                {
+                  url: 'symptoms',
+                  valueString: JSON.stringify(latest.symptoms ?? {}),
+                },
+                {
+                  url: 'regionDiscomfort',
+                  valueString: JSON.stringify(latest.regionDiscomfort ?? {}),
+                },
+                latest.photoDataUrl
+                  ? {
+                      url: 'clinicalPhotoAttached',
+                      valueBoolean: true,
+                    }
+                  : null,
+              ].filter(Boolean),
             },
           }
         : null,
@@ -81,6 +95,11 @@ function vitalsToObservations(c: CheckInRecord) {
     ['glucose', c.glucose, 'mg/dL'],
     ['sleep-hours', c.sleepH, 'h'],
     ['mood', c.mood, '{score}'],
+    ['radiation-dose', c.radiationMsv ?? 0, 'mSv/d'],
+    ['cabin-co2', c.cabinCo2Ppm ?? 0, 'ppm'],
+    ['stress', c.stress ?? 0, '{score}'],
+    ['fatigue', c.fatigue ?? 0, '{score}'],
+    ['exercise-min', c.exerciseMin, 'min'],
   ];
 
   return pairs.map(([code, value, unit]) => ({

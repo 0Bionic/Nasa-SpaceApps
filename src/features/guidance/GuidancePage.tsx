@@ -3,12 +3,13 @@ import { GUIDANCE_LIBRARY } from '@/domain/countermeasures';
 import { HAZARD_LIST } from '@/domain/hazards';
 import { INDICATOR_LIST } from '@/domain/indicators';
 import { downloadGroundPacket } from '@/data/exportPacket';
+import { MedicalDisclaimer } from '@/components/Disclaimer';
 import { IconChevron, IconExport } from '@/components/Icons';
 
 const TIERS = [
-  { tier: 1, name: 'Do it yourself', when: 'Start here for any caution or warning reading.' },
-  { tier: 2, name: 'With the crew medical officer', when: 'When a reading stays out of range or gets worse.' },
-  { tier: 3, name: 'Escalate to ground', when: 'For critical readings. Send a packet at the next comm window.' },
+  { tier: 1, name: 'Self', when: 'First response for caution / warning readings.' },
+  { tier: 2, name: 'CMO', when: 'When a reading stays out of range or worsens.' },
+  { tier: 3, name: 'Ground', when: 'Critical. Export a packet at the next comm window.' },
 ] as const;
 
 export function GuidancePage() {
@@ -20,8 +21,7 @@ export function GuidancePage() {
         <div>
           <h1 className="h-page">Guidance</h1>
           <p className="lede mt-2">
-            What to do, in plain language. Work up the ladder: try the first step yourself, and escalate
-            only when a reading stays out of range.
+            Tier 1 self-care, Tier 2 CMO, Tier 3 ground. Escalate when a reading stays out of range.
           </p>
         </div>
         <button type="button" className="btn-quiet" onClick={() => downloadGroundPacket()}>
@@ -29,6 +29,8 @@ export function GuidancePage() {
           Export ground packet
         </button>
       </header>
+
+      <MedicalDisclaimer />
 
       <section aria-labelledby="ladder">
         <h2 id="ladder" className="h-section">
@@ -42,7 +44,7 @@ export function GuidancePage() {
                 <div className="flex items-start gap-3 border-b border-rule px-4 py-4">
                   <span
                     className={`readout flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm ${
-                      tier === 3 ? 'border-sev-red/60 text-[#FFB3B5]' : 'border-rule-strong text-star'
+                      tier === 3 ? 'border-nasa-red/60 text-[#FFB4A8]' : 'border-rule-strong text-star'
                     }`}
                   >
                     {tier}
@@ -97,21 +99,15 @@ export function GuidancePage() {
                     className={`text-faint transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
                   />
                 </button>
-                <div
-                  className={`grid transition-[grid-template-rows] duration-300 ease-[cubic-bezier(.2,.7,.2,1)] ${
-                    open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <div className="grid gap-3 pb-4 sm:grid-cols-2">
-                      <p className="text-sm leading-relaxed text-dust">{ind.whyNeeded}</p>
-                      <p className="text-sm leading-relaxed text-dust">
-                        <span className="font-semibold text-star">How to measure. </span>
-                        {ind.howToMeasure}
-                      </p>
-                    </div>
+                {open && (
+                  <div className="grid gap-3 pb-4 sm:grid-cols-2">
+                    <p className="text-sm text-dust">{ind.whyNeeded}</p>
+                    <p className="text-sm text-dust">
+                      <span className="font-medium text-star">How to measure. </span>
+                      {ind.howToMeasure}
+                    </p>
                   </div>
-                </div>
+                )}
               </li>
             );
           })}
@@ -122,10 +118,10 @@ export function GuidancePage() {
         <h2 id="hazards" className="h-section">
           The five hazards of human spaceflight
         </h2>
-        <div className="mt-4 grid gap-px overflow-hidden rounded-[10px] border border-rule bg-rule md:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-4 grid gap-px overflow-hidden rounded border border-rule bg-rule md:grid-cols-2 xl:grid-cols-5">
           {HAZARD_LIST.map((h) => (
             <article key={h.id} className="bg-hull p-4">
-              <h3 className="w-wide text-[0.9375rem] font-semibold text-star">{h.name}</h3>
+              <h3 className="text-sm font-semibold text-star">{h.name}</h3>
               <p className="mt-2 text-sm leading-relaxed text-dust">{h.description}</p>
               <p className="mt-3 border-t border-rule pt-3 text-xs leading-relaxed text-faint">
                 {h.clinicalImpact}

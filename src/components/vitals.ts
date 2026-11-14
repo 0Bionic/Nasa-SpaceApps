@@ -7,10 +7,10 @@ import type {
 } from '@/domain/types';
 
 export const SEVERITY_COLOR: Record<Severity, string> = {
-  green: '#3CCB8A',
-  yellow: '#EFCB45',
-  amber: '#FF9A3D',
-  red: '#FF5C61',
+  green: '#4AA564',
+  yellow: '#FF9D1E',
+  amber: '#F9AA43',
+  red: '#FC3D21',
 };
 
 export const SEVERITY_LABEL: Record<Severity, string> = {
@@ -31,6 +31,10 @@ export const INDICATOR_FIELD: Record<HealthIndicatorId, keyof CheckInInput> = {
   sleep_h: 'sleepH',
   mood: 'mood',
   exercise_min: 'exerciseMin',
+  radiation_msv: 'radiationMsv',
+  cabin_co2: 'cabinCo2Ppm',
+  stress: 'stress',
+  fatigue: 'fatigue',
 };
 
 export function indicatorValue(
@@ -53,6 +57,10 @@ export const SCALE_RANGE: Record<HealthIndicatorId, [number, number]> = {
   sleep_h: [0, 12],
   mood: [1, 10],
   exercise_min: [0, 120],
+  radiation_msv: [0, 3],
+  cabin_co2: [400, 7000],
+  stress: [1, 10],
+  fatigue: [1, 10],
 };
 
 export interface ScaleSegment {
@@ -87,7 +95,8 @@ export function scalePosition(id: HealthIndicatorId, value: number): number {
 }
 
 export function formatValue(id: HealthIndicatorId, value: number): string {
-  const decimals = id === 'temp' || id === 'sleep_h' ? 1 : 0;
+  const decimals =
+    id === 'radiation_msv' ? 2 : id === 'temp' || id === 'sleep_h' ? 1 : 0;
   return value.toFixed(decimals);
 }
 
