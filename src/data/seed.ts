@@ -32,10 +32,14 @@ function buildHistory(profileId: string): CheckInRecord[] {
       ),
       mood: Math.round(clamp(8 - fatigueTrend * 3 - (day % 9 === 0 ? 2 : 0), 2, 10)),
       exerciseMin: day % 4 === 0 ? 20 : day % 3 === 0 ? 35 : 55,
-      radiationMsv: Number((0.28 + fatigueTrend * 0.35 + (day % 11 === 0 ? 0.8 : 0)).toFixed(2)),
+      radiationMsv: Number((1.2 + fatigueTrend * 0.2 + (day % 11 === 0 ? 1.6 : 0)).toFixed(2)), // lunar-surface background ≈1.37 mSv/d (Chang’e-4)
       cabinCo2Ppm: Math.round(750 + fatigueTrend * 1200 + (day % 6) * 40),
       stress: Math.round(clamp(3 + fatigueTrend * 4 + (day % 8 === 0 ? 2 : 0), 1, 10)),
       fatigue: Math.round(clamp(3 + fatigueTrend * 4, 1, 10)),
+      teamwork: Math.round(clamp(9 - fatigueTrend * 3 - (day % 10 === 0 ? 2 : 0), 1, 10)),
+      dizziness: day === 3 || day === 4 ? 4 : day % 9 === 0 ? 2 : 0,
+      resistiveMin: day % 4 === 0 ? 10 : day % 3 === 0 ? 25 : 35,
+      fluidL: Number(clamp(2.7 - fatigueTrend * 0.9 + (day % 3) * 0.1, 1, 4).toFixed(1)),
       notes: day === 1 ? 'Mild headache after EVA sim.' : '',
       symptoms: {
         sansVisualChanges: day === 5,

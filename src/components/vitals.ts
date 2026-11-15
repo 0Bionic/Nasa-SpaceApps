@@ -1,4 +1,4 @@
-import { INDICATORS } from '@/domain/indicators';
+import { INDICATORS, INDICATOR_DECIMALS } from '@/domain/indicators';
 import type {
   CheckInInput,
   HealthIndicatorId,
@@ -40,6 +40,10 @@ export const INDICATOR_FIELD: Record<HealthIndicatorId, keyof CheckInInput> = {
   cabin_co2: 'cabinCo2Ppm',
   stress: 'stress',
   fatigue: 'fatigue',
+  teamwork: 'teamwork',
+  dizziness: 'dizziness',
+  resistive_min: 'resistiveMin',
+  fluid_l: 'fluidL',
 };
 
 export function indicatorValue(
@@ -62,10 +66,14 @@ export const SCALE_RANGE: Record<HealthIndicatorId, [number, number]> = {
   sleep_h: [0, 12],
   mood: [1, 10],
   exercise_min: [0, 120],
-  radiation_msv: [0, 3],
+  radiation_msv: [0, 12],
   cabin_co2: [400, 7000],
   stress: [1, 10],
   fatigue: [1, 10],
+  teamwork: [1, 10],
+  dizziness: [0, 10],
+  resistive_min: [0, 90],
+  fluid_l: [0, 6],
 };
 
 export interface ScaleSegment {
@@ -100,9 +108,7 @@ export function scalePosition(id: HealthIndicatorId, value: number): number {
 }
 
 export function formatValue(id: HealthIndicatorId, value: number): string {
-  const decimals =
-    id === 'radiation_msv' ? 2 : id === 'temp' || id === 'sleep_h' ? 1 : 0;
-  return value.toFixed(decimals);
+  return value.toFixed(INDICATOR_DECIMALS[id]);
 }
 
 export function formatUnit(id: HealthIndicatorId): string {

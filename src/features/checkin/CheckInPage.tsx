@@ -28,10 +28,14 @@ const defaults: CheckInInput = {
   sleepH: 7,
   mood: 7,
   exerciseMin: 45,
-  radiationMsv: 0.35,
+  radiationMsv: 1.3,
   cabinCo2Ppm: 900,
   stress: 4,
   fatigue: 4,
+  teamwork: 8,
+  dizziness: 0,
+  resistiveMin: 30,
+  fluidL: 2.5,
   notes: '',
   symptoms: { sansVisualChanges: false, rash: false, orthostaticDizziness: false },
   regionDiscomfort: {},
@@ -47,7 +51,12 @@ const GROUPS: { title: string; note: string; ids: HealthIndicatorId[] }[] = [
   {
     title: 'Recovery & behaviour',
     note: 'Sleep, mood, stress, fatigue, and exercise countermeasures.',
-    ids: ['sleep_h', 'mood', 'stress', 'fatigue', 'exercise_min'],
+    ids: ['sleep_h', 'mood', 'stress', 'fatigue', 'exercise_min', 'resistive_min', 'fluid_l'],
+  },
+  {
+    title: 'Crew & balance',
+    note: 'Teamwork and inner-ear symptoms (NASA teamwork and sensorimotor risks).',
+    ids: ['teamwork', 'dizziness'],
   },
   {
     title: 'Habitat & radiation',
@@ -60,13 +69,18 @@ const STEP: Partial<Record<HealthIndicatorId, number>> = {
   temp: 0.1,
   sleep_h: 0.1,
   radiation_msv: 0.01,
+  fluid_l: 0.1,
 };
 const LIMITS: Partial<Record<HealthIndicatorId, [number, number]>> = {
   mood: [1, 10],
   stress: [1, 10],
   fatigue: [1, 10],
+  teamwork: [1, 10],
+  dizziness: [0, 10],
+  fluid_l: [0, 10],
+  resistive_min: [0, 300],
   spo2: [50, 100],
-  radiation_msv: [0, 10],
+  radiation_msv: [0, 100],
   cabin_co2: [200, 10000],
 };
 

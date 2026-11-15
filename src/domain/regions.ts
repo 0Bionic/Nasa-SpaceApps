@@ -20,7 +20,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
     description: 'Neurological comfort, vision, and SANS screening.',
     functionNote:
       'Fluid shifts toward the head in microgravity can raise intracranial and intraocular pressure, contributing to SANS.',
-    indicators: ['mood', 'temp', 'radiation_msv'],
+    indicators: ['mood', 'temp', 'radiation_msv', 'dizziness'],
     hazards: ['gravity', 'radiation'],
     position: [0, 1.58, 0.16],
   },
@@ -31,7 +31,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
     description: 'Heart rate and blood pressure under altered gravity.',
     functionNote:
       'Without gravity-driven hydrostatic gradients, the heart remolds and orthostatic tolerance declines.',
-    indicators: ['hr', 'bp_sys', 'bp_dia', 'exercise_min'],
+    indicators: ['hr', 'bp_sys', 'bp_dia', 'exercise_min', 'fluid_l'],
     hazards: ['gravity', 'closed_environment'],
     position: [-0.07, 1.2, 0.14],
   },
@@ -53,7 +53,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
     description: 'Bone loading and muscle countermeasure adherence.',
     functionNote:
       'Unload bones and muscles atrophy quickly without resistive exercise protocols.',
-    indicators: ['exercise_min', 'fatigue'],
+    indicators: ['exercise_min', 'fatigue', 'resistive_min'],
     hazards: ['gravity'],
     position: [0, 0.55, 0.12],
   },
@@ -75,7 +75,7 @@ export const BODY_REGIONS: Record<BodyRegionId, BodyRegionDefinition> = {
     description: 'Sleep, mood, stress, and fatigue — isolation risk indicators.',
     functionNote:
       'Distance and confinement amplify sleep loss, stress, and mood decline; early detection protects crew performance.',
-    indicators: ['sleep_h', 'mood', 'stress', 'fatigue'],
+    indicators: ['sleep_h', 'mood', 'stress', 'fatigue', 'teamwork'],
     hazards: ['isolation', 'distance'],
     position: [0, 1.82, 0],
   },

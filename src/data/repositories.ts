@@ -191,6 +191,19 @@ export async function setEnvironment(environment: MissionEnvironment): Promise<C
 }
 
 /** Mock wearable + habitat monitor sync */
+/**
+ * Wipe all local data (check-ins, profile, routines, badges, uplinks) so the
+ * app reseeds the demo crew member on next load. Used by "Reset demo data".
+ */
+export async function resetDemoData(): Promise<void> {
+  await db.delete();
+  try {
+    localStorage.removeItem('aetherhealth-uplinks');
+  } catch {
+    /* storage unavailable */
+  }
+}
+
 export function mockSensorSync(): CheckInInput {
   return {
     hr: 68 + Math.floor(Math.random() * 8),
@@ -206,6 +219,10 @@ export function mockSensorSync(): CheckInInput {
     cabinCo2Ppm: Math.round(700 + Math.random() * 900),
     stress: 3 + Math.floor(Math.random() * 4),
     fatigue: 3 + Math.floor(Math.random() * 4),
+    teamwork: 6 + Math.floor(Math.random() * 4),
+    dizziness: Math.floor(Math.random() * 3),
+    resistiveMin: 0,
+    fluidL: Number((1.8 + Math.random() * 1.2).toFixed(1)),
     notes: 'Synced from mock wearable / cuff suite + cabin monitors.',
     symptoms: {
       sansVisualChanges: false,

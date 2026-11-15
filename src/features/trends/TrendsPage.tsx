@@ -11,11 +11,23 @@ import {
   YAxis,
 } from 'recharts';
 import { useAppStore } from '@/store/useAppStore';
-import { severityFor, triageIndicator } from '@/domain/triage/engine';
+import { bandFor, bandRangeText, severityFor, triageCheckIn, triageIndicator } from '@/domain/triage/engine';
 import { INDICATORS } from '@/domain/indicators';
+import { HAZARDS } from '@/domain/hazards';
+import { forecast, forecastText } from '@/domain/forecast';
+import { compoundAlerts } from '@/domain/mission';
+import { CompoundAlertsPanel, MissionProfileStrip, UplinkQueue } from './MissionPanels';
+import {
+  BASIS_LABEL,
+  CAREER_RADIATION_LIMIT_MSV,
+  EVIDENCE,
+  SOURCES,
+  radiationBudget,
+} from '@/domain/evidence';
 import type { HealthIndicatorId, Severity } from '@/domain/types';
 import { alpha, formatValue, withUnit } from '@/components/vitals';
 import { downloadGroundPacket } from '@/data/exportPacket';
+import { useAudience, useTerm } from '@/app/audience';
 import {
   ANALYTICS_METRICS,
   C,
@@ -74,6 +86,8 @@ export function TrendsPage() {
   const history = useAppStore((s) => s.history);
   const profile = useAppStore((s) => s.profile);
   const [params, setParams] = useSearchParams();
+  const term = useTerm();
+  const audience = useAudience((s) => s.audience);
   const paramMetric = params.get('metric');
 
   const [metric, setMetricState] = useState<HealthIndicatorId>(isMetric(paramMetric) ? paramMetric : 'sleep_h');
@@ -104,7 +118,9 @@ export function TrendsPage() {
 
   const featured = useMemo(() => {
     const pool = summaries.filter((s) => category === 'all' || METRIC_META[s.id].category === category);
-    return [...pool].sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]).slice(0, 3);
+    // Worst first; among equals, readings trending out of range (early warnings) come next.
+    const rank = (s: IndicatorSummary) => SEVERITY_RANK[s.severity] * 2 + (s.forecast?.kind === 'leaving' ? 1 : 0);
+    return [...pool].sort((a, b) => rank(b) - rank(a)).slice(0, 3);
   }, [summaries, category]);
 
   const matches = useMemo(() => {
@@ -147,6 +163,8 @@ export function TrendsPage() {
   }, [data]);
 
   const latestRecord = history[0];
+  const critical = useMemo(() => (latestRecord ? triageCheckIn(latestRecord).filter((r) => r.severity === 'red') : []), [latestRecord]);
+  const detailForecast = useMemo(() => forecast(metric, history.slice(0, 7).reverse().map((c) => valueOf(c, metric))), [history, metric]);
   const triage = latestRecord ? triageIndicator(metric, valueOf(latestRecord, metric)) : null;
   const latestSev = triage?.severity ?? 'green';
   const fill = maxDays > 3 ? ((days - 3) / (maxDays - 3)) * 100 : 100;
@@ -231,6 +249,19 @@ export function TrendsPage() {
         </div>
       </div>
 
+      {critical.length > 0 && (
+        <div role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl border border-n-red/50 bg-n-red/10 px-4 py-3">
+          <span className="h-2.5 w-2.5 rounded-full bg-n-red" aria-hidden="true" />
+          <p className="mr-auto text-[13px]">
+            <span className="font-semibold text-n-red">Critical: </span>
+            {critical.map((r) => `${INDICATORS[r.indicatorId].label} ${withUnit(r.indicatorId, r.value)}`).join(' · ')}
+          </p>
+          <Link to={`/protocol?metric=${critical[0].indicatorId}`} className="n-btn bg-n-red">
+            Start guided protocol
+          </Link>
+        </div>
+      )}
+
       {/* ---------- Hero ---------- */}
       <div className="grid gap-5 xl:grid-cols-[1fr_310px]">
         <section aria-labelledby="vitals-title" className="min-w-0 space-y-3.5">
@@ -253,7 +284,7 @@ export function TrendsPage() {
                     category === c ? 'bg-n-blue font-medium text-white' : 'text-n-muted hover:text-n-text'
                   }`}
                 >
-                  {c === 'all' ? 'All' : CATEGORY_LABEL[c]}
+                  {c === 'all' ? 'All' : c === 'habitat' ? term('habitat') : CATEGORY_LABEL[c]}
                 </button>
               ))}
             </div>
@@ -278,19 +309,31 @@ export function TrendsPage() {
             <span className="mr-auto font-display text-[13px] font-medium">AetherHealth</span>
             <span className="rounded-md bg-n-red px-2 py-0.5 font-mono text-[10px] font-medium text-white">FHIR</span>
           </div>
-          <h2 className="font-display text-[26px] font-medium tracking-[-0.02em]">Ground Packet</h2>
+          <h2 className="font-display text-[26px] font-medium tracking-[-0.02em]">{term('packetTitle')}</h2>
           <p className="text-[13px] leading-relaxed text-n-muted">
-            Summary of every indicator, alert and countermeasure, ready for the next flight-surgeon downlink.
+            {term('packetBody')}
           </p>
           <div className="flex-1" />
           <button type="button" className="n-btn w-full py-3" onClick={() => downloadGroundPacket()}>
-            Export to ground <NIcon name="upload" />
+            {term('packetExport')} <NIcon name="upload" />
           </button>
           <Link to="/guidance" className="n-btn-ghost w-full py-3">
             Review guidance <NIcon name="clock" />
           </Link>
+          <UplinkQueue />
         </aside>
       </div>
+
+      {profile && audience === 'mission' && (
+        <MissionProfileStrip
+          environment={profile.environment}
+          avgDose={history.length ? history.slice(0, 30).reduce((t, c) => t + c.radiationMsv, 0) / Math.min(30, history.length) : null}
+        />
+      )}
+
+      {latestRecord && <CompoundAlertsPanel alerts={compoundAlerts(latestRecord)} />}
+
+      {profile && audience === 'mission' && <RadiationBudgetCard doses={history.slice(0, 30).map((c) => c.radiationMsv)} missionDay={profile.missionDay} />}
 
       {/* ---------- Detail panel ---------- */}
       <section
@@ -421,6 +464,20 @@ export function TrendsPage() {
             </div>
 
             <div id="detail-tabpanel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="pt-5">
+              {detailForecast && (
+                <p
+                  role="status"
+                  className={`mb-4 flex items-start gap-2 rounded-[10px] border px-3 py-2 text-[13px] ${
+                    detailForecast.kind === 'recovering' ? 'border-n-line text-n-muted' : 'border-n-amber/50 bg-n-amber/10 text-n-text'
+                  }`}
+                >
+                  <NIcon name="bolt" size={15} className={`mt-0.5 shrink-0 ${detailForecast.kind === 'recovering' ? 'text-n-green' : 'text-n-amber'}`} />
+                  <span>
+                    <span className="font-medium">Early warning. </span>
+                    {forecastText(metric, detailForecast)}. Based on a straight-line fit of the last 7 check-ins.
+                  </span>
+                </p>
+              )}
               {tab === 'trend' && (
                 <div className="n-chart w-full">
                   <div className="h-[260px] w-full">
@@ -530,18 +587,21 @@ export function TrendsPage() {
               )}
 
               {tab === 'risk' && triage && (
-                <div className="space-y-3 text-[13px]">
-                  <p className="flex items-center gap-2 font-medium">
-                    <SeverityPill severity={triage.severity} /> {triage.summary}
-                  </p>
-                  <p className="max-w-[70ch] leading-relaxed text-n-muted">{triage.why}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {triage.hazards.map((h) => (
-                      <span key={h} className="n-pill">
-                        {h.replace('_', ' ')}
-                      </span>
-                    ))}
+                <div className="grid gap-5 text-[13px] lg:grid-cols-2">
+                  <div className="space-y-3">
+                    <p className="flex flex-wrap items-center gap-2 font-medium">
+                      <SeverityPill severity={triage.severity} /> {triage.summary}
+                    </p>
+                    <p className="max-w-[70ch] leading-relaxed text-n-muted">{triage.why}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {triage.hazards.map((h) => (
+                        <span key={h} className="n-pill">
+                          {HAZARDS[h].shortName}
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                  <WhyThisColor metric={metric} value={triage.value} />
                 </div>
               )}
 
@@ -642,6 +702,12 @@ function IndicatorCard({ s, active, onSelect }: { s: IndicatorSummary; active: b
         {s.deltaPct == null ? 'No prior data' : `${s.deltaPct >= 0 ? '+' : '−'}${Math.abs(s.deltaPct).toFixed(1)}% vs 7-check-in mean`}
       </span>
       <Sparkline series={s.series} color={off ? tone.hex : NEON} />
+      {s.forecast && s.forecast.kind !== 'recovering' && (
+        <span className={`flex items-start gap-1.5 text-[11px] leading-snug ${s.forecast.kind === 'leaving' ? 'text-n-amber' : tone.text}`}>
+          <NIcon name="bolt" size={13} className="mt-px shrink-0" />
+          {forecastText(s.id, s.forecast)}
+        </span>
+      )}
     </button>
   );
 }
@@ -660,5 +726,112 @@ function StatTile({ label, pill, value, sub, tone }: { label: string; pill: stri
         <span className="font-mono text-[11px] text-n-muted">{sub}</span>
       </dd>
     </div>
+  );
+}
+
+/** Shows the band a reading fell in, how strong the threshold is, and where it comes from. */
+function WhyThisColor({ metric, value }: { metric: HealthIndicatorId; value: number }) {
+  const ev = EVIDENCE[metric];
+  const band = bandFor(metric, value);
+  const sev = band?.severity ?? severityFor(metric, value);
+  const bands = INDICATORS[metric].bands;
+  return (
+    <div className="space-y-3 rounded-[14px] border border-n-line p-4">
+      <p className="flex flex-wrap items-center gap-2 text-[13px] font-medium">
+        Why this color
+        <span className="n-pill border-n-text/30 bg-n-text/5 text-n-muted">{BASIS_LABEL[ev.basis]}</span>
+      </p>
+      <p className="text-n-muted">
+        {withUnit(metric, value)} falls in the <span className={`font-medium ${SEV_TONE[sev].text}`}>{SEV_SHORT[sev]}</span> band
+        {band ? ` (${bandRangeText(metric, band)})` : ''}.
+      </p>
+      <ul className="flex flex-wrap gap-1.5" aria-label="All bands">
+        {bands.map((b, i) => (
+          <li
+            key={i}
+            className={`rounded-md border px-2 py-0.5 font-mono text-[10px] ${b === band ? 'border-n-neon text-n-text' : 'border-n-line text-n-muted'}`}
+          >
+            <span className={SEV_TONE[b.severity].text}>●</span> {bandRangeText(metric, b)}
+          </li>
+        ))}
+      </ul>
+      <p className="leading-relaxed text-n-muted">{ev.rationale}</p>
+      {ev.risks.length > 0 && (
+        <p className="text-xs text-n-muted">
+          <span className="font-medium text-n-text">Monitors: </span>
+          {ev.risks.join(' · ')} (NASA HRP)
+        </p>
+      )}
+      <p className="text-xs text-n-muted">
+        <span className="font-medium text-n-text">Sources: </span>
+        {ev.sources.map((id, i) => {
+          const s = SOURCES[id];
+          return (
+            <span key={id}>
+              {i > 0 && ' · '}
+              {s.url ? (
+                <a href={s.url} target="_blank" rel="noreferrer" className="text-n-neon underline-offset-2 hover:underline">
+                  {s.title}
+                </a>
+              ) : (
+                <span>
+                  {s.org}, {s.title}
+                </span>
+              )}
+            </span>
+          );
+        })}
+      </p>
+    </div>
+  );
+}
+
+/** Cumulative mission dose against NASA's 600 mSv career limit (NASA-STD-3001). */
+function RadiationBudgetCard({ doses, missionDay }: { doses: number[]; missionDay: number }) {
+  const b = radiationBudget(doses, missionDay);
+  if (!b) return null;
+  const pct = Math.min(100, b.pct);
+  const tone = b.pct >= 100 ? SEV_TONE.red : b.pct >= 75 ? SEV_TONE.amber : b.pct >= 50 ? SEV_TONE.yellow : SEV_TONE.green;
+  const years = b.daysToLimit / 365;
+  return (
+    <section aria-labelledby="rad-budget" className="n-card grid gap-5 p-5 lg:grid-cols-[1fr_1.3fr] lg:items-center">
+      <div className="space-y-1.5">
+        <p className="flex items-center gap-2 text-xs text-n-muted">
+          Radiation budget
+          <span className="n-pill">Cumulative</span>
+        </p>
+        <h2 id="rad-budget" className="flex items-baseline gap-2 font-display">
+          <span className="text-[34px] font-medium leading-none tracking-[-0.02em]">{b.missionDose.toFixed(0)}</span>
+          <span className="text-base text-n-muted">mSv of {CAREER_RADIATION_LIMIT_MSV} mSv career limit</span>
+        </h2>
+        <p className="text-xs text-n-muted">
+          Estimated: {b.avgDaily.toFixed(2)} mSv/day average over {b.samples} check-ins × {missionDay} mission days.
+        </p>
+      </div>
+      <div className="space-y-2">
+        <div
+          className="h-3 overflow-hidden rounded-full bg-n-line/50"
+          role="progressbar"
+          aria-label="Share of career radiation limit used"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(b.pct)}
+        >
+          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: tone.hex, boxShadow: `0 0 10px ${tone.hex}` }} />
+        </div>
+        <div className="flex flex-wrap justify-between gap-2 font-mono text-[11px] text-n-muted">
+          <span className={tone.text}>{b.pct.toFixed(1)}% used</span>
+          <span>
+            {Number.isFinite(b.daysToLimit)
+              ? `~${b.daysToLimit >= 730 ? `${years.toFixed(1)} years` : `${Math.round(b.daysToLimit)} days`} to limit at this rate`
+              : 'No dose logged'}
+          </span>
+        </div>
+        <p className="text-[11px] leading-relaxed text-n-muted">
+          Limit: NASA-STD-3001 Vol. 1 Rev. B. Long-term cancer risk tracks total dose, so this total matters more than any one day. Neutrons
+          are about 30% of ISS radiation (CSA); an autonomous neutron monitor such as CSA’s CANS could feed this card.
+        </p>
+      </div>
+    </section>
   );
 }

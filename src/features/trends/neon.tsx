@@ -1,6 +1,7 @@
 import type { CheckInRecord, HealthIndicatorId, Severity } from '@/domain/types';
 import { INDICATORS } from '@/domain/indicators';
 import { severityFor } from '@/domain/triage/engine';
+import { forecast, type Forecast } from '@/domain/forecast';
 import { INDICATOR_FIELD } from '@/components/vitals';
 
 export const NEON = 'rgb(var(--c-accent))';
@@ -36,6 +37,10 @@ export const ANALYTICS_METRICS: { id: HealthIndicatorId; glyph: string; category
   { id: 'stress', glyph: 'ST', category: 'behavioural' },
   { id: 'fatigue', glyph: 'FT', category: 'behavioural' },
   { id: 'exercise_min', glyph: 'EX', category: 'behavioural' },
+  { id: 'resistive_min', glyph: 'RX', category: 'behavioural' },
+  { id: 'teamwork', glyph: 'TM', category: 'behavioural' },
+  { id: 'dizziness', glyph: 'VS', category: 'physiological' },
+  { id: 'fluid_l', glyph: 'H₂O', category: 'physiological' },
   { id: 'cabin_co2', glyph: 'CO₂', category: 'habitat' },
   { id: 'radiation_msv', glyph: 'RD', category: 'habitat' },
 ];
@@ -73,6 +78,8 @@ export interface IndicatorSummary {
   /** Percent change of latest vs mean of the 7 check-ins before it. */
   deltaPct: number | null;
   series: number[];
+  /** Early-warning trend from the last 7 check-ins. */
+  forecast: Forecast | null;
 }
 
 /** history is newest-first, as stored. */
@@ -90,6 +97,13 @@ export function summarize(history: CheckInRecord[], id: HealthIndicatorId): Indi
       .slice(0, 12)
       .reverse()
       .map((c) => valueOf(c, id)),
+    forecast: forecast(
+      id,
+      history
+        .slice(0, 7)
+        .reverse()
+        .map((c) => valueOf(c, id)),
+    ),
   };
 }
 

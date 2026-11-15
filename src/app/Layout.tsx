@@ -3,10 +3,12 @@ import { useAppStore } from '@/store/useAppStore';
 import { MedicalDisclaimer } from '@/components/Disclaimer';
 import { EARTH_DELAY, ENVIRONMENT_LABEL, alpha, formatValue } from '@/components/vitals';
 import { ThemeToggle } from './theme';
+import { useAudience, useTerm } from './audience';
 import { INDICATORS } from '@/domain/indicators';
 import {
   IconCheckIn,
   IconCrew,
+  IconGlobe,
   IconGuidance,
   IconRoutines,
   IconSignal,
@@ -22,6 +24,7 @@ const links = [
   { to: '/guidance', label: 'Guidance', Icon: IconGuidance },
   { to: '/routines', label: 'Routines', Icon: IconRoutines },
   { to: '/profile', label: 'Crew', Icon: IconCrew },
+  { to: '/beyond', label: 'On Earth', Icon: IconGlobe },
 ];
 
 export function BrandMark({ size = 28 }: { size?: number }) {
@@ -40,6 +43,8 @@ export function Layout() {
   const profile = useAppStore((s) => s.profile);
   const history = useAppStore((s) => s.history);
   const delay = profile ? EARTH_DELAY[profile.environment] : null;
+  const term = useTerm();
+  const audience = useAudience((s) => s.audience);
 
   const watch = ANALYTICS_METRICS.map((m) => ({ ...m, s: summarize(history, m.id) }))
     .filter((m) => m.s && m.s.severity !== 'green')
@@ -123,10 +128,10 @@ export function Layout() {
           <div className="n-glow space-y-1 rounded-xl border border-n-neon/55 bg-n-panel p-3.5">
             <p className="flex items-center gap-2 text-xs text-n-muted">
               <IconSignal width={16} height={16} className="text-n-neon" />
-              Earth delay
+              {term('delayTitle')}
             </p>
-            <p className="font-display text-[22px] font-medium">{delay.value}</p>
-            <p className="text-[11px] text-n-muted">{delay.note} · offline capable</p>
+            <p className="font-display text-[22px] font-medium">{audience === 'earth' ? 'Offline-first' : delay.value}</p>
+            <p className="text-[11px] text-n-muted">{audience === 'earth' ? 'Works with no network · syncs later' : `${delay.note} · offline capable`}</p>
           </div>
         )}
         </div>
@@ -160,7 +165,7 @@ export function Layout() {
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 grid font-ui grid-cols-6 border-t border-n-line bg-n-ink pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid font-ui grid-cols-7 border-t border-n-line bg-n-ink pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {links.map(({ to, label, Icon }) => (
           <NavLink

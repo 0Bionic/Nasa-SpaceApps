@@ -47,9 +47,10 @@
     --c-red: 214 40 18;
     --c-alert: 180 35 24;
     --c-alert-sub: 122 39 26;
-    --sev-green: 21 146 72;
-    --sev-yellow: 184 138 0;
-    --sev-amber: 205 112 0;
+    /* Darker in light mode so status text meets WCAG AA (4.5:1) on white. */
+    --sev-green: 21 128 61;
+    --sev-yellow: 133 100 0;
+    --sev-amber: 180 83 9;
     --sev-red: 214 40 18;
     --glow: 0 4px 18px rgb(16 91 216 / 0.14), 0 0 0 1px rgb(16 91 216 / 0.06);
     --glow-soft: 0 2px 10px rgb(11 23 48 / 0.06);

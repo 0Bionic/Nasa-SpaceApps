@@ -37,7 +37,7 @@ export default {
           blue: v('--c-blue'),
           text: v('--c-text'),
           muted: v('--c-muted'),
-          faint: v('--c-dim'),
+          faint: v('--c-faint'), // text-safe (≥4.5:1); --c-dim is for decoration only
           green: v('--sev-green'),
           amber: v('--sev-amber'),
           red: v('--c-red'),

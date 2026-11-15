@@ -2,6 +2,7 @@ import { triageCheckIn } from '@/domain/triage/engine';
 import type { CheckInRecord, CrewProfile } from '@/domain/types';
 import { encryptText } from './crypto';
 import { getActiveProfile, listCheckIns } from './repositories';
+import { useUplinks } from './uplink';
 
 /** FHIR-lite / demo ground packet for flight surgeons */
 export async function buildGroundPacket() {
@@ -99,6 +100,10 @@ function vitalsToObservations(c: CheckInRecord) {
     ['cabin-co2', c.cabinCo2Ppm ?? 0, 'ppm'],
     ['stress', c.stress ?? 0, '{score}'],
     ['fatigue', c.fatigue ?? 0, '{score}'],
+    ['crew-cohesion', c.teamwork ?? 0, '{score}'],
+    ['dizziness', c.dizziness ?? 0, '{score}'],
+    ['resistive-exercise-min', c.resistiveMin ?? 0, 'min'],
+    ['fluid-intake', c.fluidL ?? 0, 'L'],
     ['exercise-min', c.exerciseMin, 'min'],
   ];
 
@@ -115,6 +120,8 @@ function vitalsToObservations(c: CheckInRecord) {
 
 export async function downloadGroundPacket() {
   const packet = await buildGroundPacket();
+  // Queue a simulated uplink so the crew sees transit time and earliest reply.
+  useUplinks.getState().enqueue((await getActiveProfile()).environment);
   const blob = new Blob([JSON.stringify(packet, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

@@ -1,11 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { MissionEnvironment } from '@/domain/types';
-import { updateProfile } from '@/data/repositories';
+import { resetDemoData, updateProfile } from '@/data/repositories';
 import { downloadGroundPacket } from '@/data/exportPacket';
 import { useAppStore } from '@/store/useAppStore';
 import { BadgeShelf } from '@/features/gamification/BadgeShelf';
 import { IconCheck, IconExport } from '@/components/Icons';
 import { EARTH_DELAY } from '@/components/vitals';
+import { CrewBoard } from './CrewBoard';
 
 const ENVIRONMENTS: { id: MissionEnvironment; label: string; blurb: string }[] = [
   { id: 'station', label: 'Orbital station', blurb: 'A habitat in low Earth orbit' },
@@ -50,6 +51,8 @@ export function ProfilePage() {
           Habitat sets the Earth delay shown in the sidebar. Reminder toggle lives under Routines.
         </p>
       </header>
+
+      <CrewBoard />
 
       <form onSubmit={onSubmit} className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <div className="space-y-5">
@@ -119,6 +122,17 @@ export function ProfilePage() {
             <button type="button" className="btn-quiet" onClick={() => downloadGroundPacket()}>
               <IconExport width={16} height={16} />
               Export ground packet
+            </button>
+            <button
+              type="button"
+              className="btn border border-nasa-red/50 text-nasa-red hover:bg-nasa-red/10"
+              onClick={async () => {
+                if (!window.confirm('Reset demo data? This permanently deletes every check-in, badge and routine on this device and reloads the 30-day demo history.')) return;
+                await resetDemoData();
+                window.location.assign('/');
+              }}
+            >
+              Reset demo data
             </button>
             {saved && (
               <span className="flex items-center gap-1.5 text-sm text-sev-green" role="status">

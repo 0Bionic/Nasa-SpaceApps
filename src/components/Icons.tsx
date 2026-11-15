@@ -78,6 +78,12 @@ export const IconSignal = (p: P) => (
     <path d="M6.6 5.2a5 5 0 0 0 0 6.6M13.4 5.2a5 5 0 0 1 0 6.6M4.2 2.8a8.4 8.4 0 0 0 0 11.4M15.8 2.8a8.4 8.4 0 0 1 0 11.4" />
   </Base>
 );
+export const IconGlobe = (p: P) => (
+  <Base {...p}>
+    <circle cx="10" cy="10" r="7.5" />
+    <path d="M2.5 10h15M10 2.5c2.2 2.1 3.2 4.6 3.2 7.5S12.2 15.4 10 17.5C7.8 15.4 6.8 12.9 6.8 10S7.8 4.6 10 2.5z" />
+  </Base>
+);
 export const IconSensor = (p: P) => (
   <Base {...p}>
     <rect x="6" y="3" width="8" height="14" rx="3" />

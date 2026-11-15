@@ -7,6 +7,8 @@ import { TrendsPage } from '@/features/trends/TrendsPage';
 import { GuidancePage } from '@/features/guidance/GuidancePage';
 import { RoutinesPage } from '@/features/routines/RoutinesPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
+import { BeyondPage } from '@/features/beyond/BeyondPage';
+import { ProtocolPage } from '@/features/protocol/ProtocolPage';
 import { Onboarding } from '@/features/onboarding/Onboarding';
 import { useAppStore } from '@/store/useAppStore';
 import {
@@ -65,6 +67,8 @@ export function App() {
           <Route path="guidance" element={<GuidancePage />} />
           <Route path="routines" element={<RoutinesPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="beyond" element={<BeyondPage />} />
+          <Route path="protocol" element={<ProtocolPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

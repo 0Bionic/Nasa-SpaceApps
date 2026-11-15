@@ -22,8 +22,32 @@ export interface IndicatorDefinition {
 }
 
 /**
- * Educational/demo thresholds inspired by terrestrial clinical ranges
- * and spaceflight risk framing — not flight-surgeon protocol.
+ * Decimal places each indicator is recorded at. Bands are written at this
+ * precision, so values are rounded to it before matching (no gaps between bands).
+ */
+export const INDICATOR_DECIMALS: Record<HealthIndicatorId, number> = {
+  hr: 0,
+  bp_sys: 0,
+  bp_dia: 0,
+  spo2: 0,
+  temp: 1,
+  glucose: 0,
+  sleep_h: 1,
+  mood: 0,
+  exercise_min: 0,
+  radiation_msv: 2,
+  cabin_co2: 0,
+  stress: 0,
+  fatigue: 0,
+  teamwork: 0,
+  dizziness: 0,
+  resistive_min: 0,
+  fluid_l: 1,
+};
+
+/**
+ * Thresholds and their evidence (clinical guideline, spaceflight data, or app
+ * heuristic) are documented in ./evidence.ts. Not flight-surgeon protocol.
  */
 export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
   hr: {
@@ -130,11 +154,10 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
     bands: [
       { severity: 'green', min: 70, max: 140 },
       { severity: 'yellow', min: 141, max: 180 },
-      { severity: 'yellow', min: 60, max: 69 },
+      { severity: 'yellow', min: 54, max: 69 },
       { severity: 'amber', min: 181, max: 250 },
-      { severity: 'amber', min: 50, max: 59 },
       { severity: 'red', min: 251 },
-      { severity: 'red', max: 49 },
+      { severity: 'red', max: 53 },
     ],
   },
   sleep_h: {
@@ -147,10 +170,11 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
     hazards: ['isolation', 'distance'],
     regions: ['behavioral'],
     bands: [
-      { severity: 'green', min: 6.5, max: 9 },
-      { severity: 'yellow', min: 5.5, max: 6.4 },
+      { severity: 'green', min: 7, max: 9 },
+      { severity: 'yellow', min: 6, max: 6.9 },
       { severity: 'yellow', min: 9.1, max: 10 },
-      { severity: 'amber', min: 4, max: 5.4 },
+      { severity: 'amber', min: 4, max: 5.9 },
+      { severity: 'amber', min: 10.1 },
       { severity: 'red', max: 3.9 },
     ],
   },
@@ -180,7 +204,7 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
     hazards: ['gravity'],
     regions: ['msk', 'cardio'],
     bands: [
-      { severity: 'green', min: 45, max: 180 },
+      { severity: 'green', min: 45 },
       { severity: 'yellow', min: 30, max: 44 },
       { severity: 'amber', min: 15, max: 29 },
       { severity: 'red', max: 14 },
@@ -190,17 +214,17 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
     id: 'radiation_msv',
     label: 'Radiation dose',
     unit: 'mSv/d',
-    description: 'Estimated daily ionizing radiation dose from monitors / mission ops.',
+    description: 'Daily ionizing radiation dose from onboard monitors. The mission total is tracked against the 600 mSv career limit.',
     howToMeasure: 'Enter the daily dose from onboard radiation monitors (or mission ops briefing).',
     whyNeeded:
       'Space radiation damages cells and raises long-term cancer and CNS risk; dose records support early attention.',
     hazards: ['radiation'],
     regions: ['skin_immune', 'head_eyes'],
     bands: [
-      { severity: 'green', min: 0, max: 0.5 },
-      { severity: 'yellow', min: 0.51, max: 1.0 },
-      { severity: 'amber', min: 1.01, max: 2.0 },
-      { severity: 'red', min: 2.01 },
+      { severity: 'green', min: 0, max: 2.0 },
+      { severity: 'yellow', min: 2.01, max: 5.0 },
+      { severity: 'amber', min: 5.01, max: 10.0 },
+      { severity: 'red', min: 10.01 },
     ],
   },
   cabin_co2: {
@@ -250,6 +274,71 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
       { severity: 'yellow', min: 5, max: 6 },
       { severity: 'amber', min: 7, max: 8 },
       { severity: 'red', min: 9, max: 10 },
+    ],
+  },
+  teamwork: {
+    id: 'teamwork',
+    label: 'Crew cohesion',
+    unit: '/10',
+    description: 'How well the crew is working together today (1 poor – 10 excellent).',
+    howToMeasure: 'Rate communication and cooperation with your crewmates over the past 24 hours.',
+    whyNeeded: 'Long isolation and confinement strain teamwork; friction can precede errors and mood decline.',
+    hazards: ['isolation', 'distance'],
+    regions: ['behavioral'],
+    bands: [
+      { severity: 'green', min: 7, max: 10 },
+      { severity: 'yellow', min: 5, max: 6 },
+      { severity: 'amber', min: 3, max: 4 },
+      { severity: 'red', min: 1, max: 2 },
+    ],
+  },
+  dizziness: {
+    id: 'dizziness',
+    label: 'Dizziness / motion sickness',
+    unit: '/10',
+    description: 'Dizziness, vertigo, or motion sickness right now (0 none – 10 severe).',
+    howToMeasure: 'Rate symptoms after moving your head and changing posture; note if worse after a gravity transition.',
+    whyNeeded: 'Gravity transitions disturb the inner ear, causing motion sickness and poor coordination that affect walking and vehicle operation.',
+    hazards: ['gravity'],
+    regions: ['head_eyes'],
+    bands: [
+      { severity: 'green', min: 0, max: 2 },
+      { severity: 'yellow', min: 3, max: 4 },
+      { severity: 'amber', min: 5, max: 7 },
+      { severity: 'red', min: 8, max: 10 },
+    ],
+  },
+  resistive_min: {
+    id: 'resistive_min',
+    label: 'Resistive exercise',
+    unit: 'min',
+    description: 'Bone-loading resistive exercise minutes today (e.g. ARED squats, deadlifts).',
+    howToMeasure: 'Log time spent on the resistive exercise device or load-bearing work.',
+    whyNeeded: 'Without gravity, bones lose density; loading them is a primary countermeasure for bone loss.',
+    hazards: ['gravity'],
+    regions: ['msk'],
+    bands: [
+      { severity: 'green', min: 30 },
+      { severity: 'yellow', min: 20, max: 29 },
+      { severity: 'amber', min: 10, max: 19 },
+      { severity: 'red', max: 9 },
+    ],
+  },
+  fluid_l: {
+    id: 'fluid_l',
+    label: 'Fluid intake',
+    unit: 'L',
+    description: 'Total fluid intake today in litres.',
+    howToMeasure: 'Sum water and drinks from your bottle log or dispenser counter.',
+    whyNeeded: 'Fluid shifts in weightlessness and a low-thirst environment make under-hydration easy; it affects blood pressure, kidneys and performance.',
+    hazards: ['gravity', 'closed_environment'],
+    regions: ['cardio'],
+    bands: [
+      { severity: 'green', min: 2.0, max: 5.0 },
+      { severity: 'yellow', min: 1.5, max: 1.9 },
+      { severity: 'yellow', min: 5.1 },
+      { severity: 'amber', min: 1.0, max: 1.4 },
+      { severity: 'red', max: 0.9 },
     ],
   },
 };

@@ -20,7 +20,11 @@ export type HealthIndicatorId =
   | 'radiation_msv'
   | 'cabin_co2'
   | 'stress'
-  | 'fatigue';
+  | 'fatigue'
+  | 'teamwork'
+  | 'dizziness'
+  | 'resistive_min'
+  | 'fluid_l';
 
 export type BodyRegionId =
   | 'head_eyes'
@@ -89,6 +93,14 @@ export interface CheckInInput {
   stress: number;
   /** Subjective fatigue 1–10 — isolation / workload. */
   fatigue: number;
+  /** Crew cohesion / teamwork 1–10 (higher is better) — isolation, Risk of Inadequate Teamwork. */
+  teamwork: number;
+  /** Dizziness / motion sickness 0–10 (0 none) — gravity transitions, sensorimotor risk. */
+  dizziness: number;
+  /** Resistive (bone-loading) exercise minutes today. */
+  resistiveMin: number;
+  /** Fluid intake today, litres. */
+  fluidL: number;
   notes?: string;
   symptoms?: Partial<SymptomFlags>;
   regionDiscomfort?: RegionDiscomfortMap;
@@ -173,6 +185,10 @@ export function normalizeCheckInInput(input: Partial<CheckInInput> & Pick<
     cabinCo2Ppm: input.cabinCo2Ppm ?? 800,
     stress: input.stress ?? 5,
     fatigue: input.fatigue ?? 5,
+    teamwork: input.teamwork ?? 7,
+    dizziness: input.dizziness ?? 0,
+    resistiveMin: input.resistiveMin ?? 30,
+    fluidL: input.fluidL ?? 2.5,
     notes: input.notes ?? '',
     symptoms: input.symptoms ?? {},
     regionDiscomfort: input.regionDiscomfort ?? {},

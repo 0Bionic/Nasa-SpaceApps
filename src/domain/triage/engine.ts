@@ -1,5 +1,5 @@
 import { ACTIONS, actionsFor } from '../countermeasures';
-import { INDICATORS } from '../indicators';
+import { INDICATORS, INDICATOR_DECIMALS, type ThresholdBand } from '../indicators';
 import { BODY_REGIONS } from '../regions';
 import type {
   BodyRegionId,
@@ -18,11 +18,31 @@ function bandMatches(value: number, min?: number, max?: number): boolean {
   return true;
 }
 
+/** Round to the precision the bands are written at, so no value falls between two bands. */
+function toBandPrecision(indicatorId: HealthIndicatorId, value: number): number {
+  const f = 10 ** INDICATOR_DECIMALS[indicatorId];
+  return Math.round(value * f) / f;
+}
+
+/** The threshold band a reading falls in (null only for values outside every band). */
+export function bandFor(indicatorId: HealthIndicatorId, value: number): ThresholdBand | null {
+  const v = toBandPrecision(indicatorId, value);
+  return INDICATORS[indicatorId].bands.find((b) => bandMatches(v, b.min, b.max)) ?? null;
+}
+
+/** Human-readable range of a band, e.g. "90–93 %" or "≥ 121 bpm". */
+export function bandRangeText(indicatorId: HealthIndicatorId, band: ThresholdBand): string {
+  const unit = INDICATORS[indicatorId].unit;
+  const u = unit.startsWith('/') ? unit : ` ${unit}`;
+  if (band.min !== undefined && band.max !== undefined) return `${band.min}–${band.max}${u}`;
+  if (band.min !== undefined) return `≥ ${band.min}${u}`;
+  if (band.max !== undefined) return `≤ ${band.max}${u}`;
+  return 'any value';
+}
+
 export function severityFor(indicatorId: HealthIndicatorId, value: number): Severity {
-  const def = INDICATORS[indicatorId];
-  for (const band of def.bands) {
-    if (bandMatches(value, band.min, band.max)) return band.severity;
-  }
+  const band = bandFor(indicatorId, value);
+  if (band) return band.severity;
   return 'amber';
 }
 
@@ -75,6 +95,10 @@ const VALUE_MAP: Record<HealthIndicatorId, (c: CheckInInput) => number> = {
   cabin_co2: (c) => c.cabinCo2Ppm,
   stress: (c) => c.stress,
   fatigue: (c) => c.fatigue,
+  teamwork: (c) => c.teamwork,
+  dizziness: (c) => c.dizziness,
+  resistive_min: (c) => c.resistiveMin,
+  fluid_l: (c) => c.fluidL,
 };
 
 export function triageCheckIn(input: Partial<CheckInInput> & CheckInInput): TriageResult[] {
@@ -167,6 +191,10 @@ export function unusualChange(
     cabin_co2: 800,
     stress: 3,
     fatigue: 3,
+    teamwork: 3,
+    dizziness: 3,
+    resistive_min: 20,
+    fluid_l: 1,
   };
   const lim = deltas[id] ?? 10;
   return Math.abs(current - previous) >= lim;

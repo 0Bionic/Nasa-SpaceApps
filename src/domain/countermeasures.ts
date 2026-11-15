@@ -114,6 +114,20 @@ const ACTIONS: Record<string, CountermeasureAction> = {
     description: 'Verify CO₂ scrubbers, relocate to a lower-CO₂ module if available, and recheck SpO₂.',
     category: 'monitor',
   },
+  team_debrief: {
+    id: 'team_debrief',
+    tier: 1,
+    title: 'Crew debrief',
+    description: 'Hold a short structured debrief: what is working, one friction point, one agreed change. Rotate who leads.',
+    category: 'monitor',
+  },
+  vestibular_care: {
+    id: 'vestibular_care',
+    tier: 1,
+    title: 'Vestibular precautions',
+    description: 'Limit fast head movement, keep a fixed visual reference, sit for tasks, and do not operate vehicles or start an EVA until symptoms ease.',
+    category: 'monitor',
+  },
   stress_break: {
     id: 'stress_break',
     tier: 1,
@@ -190,6 +204,26 @@ const BY_INDICATOR: Record<HealthIndicatorId, Partial<Record<Severity, string[]>
     amber: ['rest_block', 'cmo_exam', 'sleep_hygiene'],
     red: ['cmo_exam', 'ground_packet', 'rest_block'],
   },
+  teamwork: {
+    yellow: ['team_debrief', 'mood_check'],
+    amber: ['team_debrief', 'cmo_exam', 'stress_break'],
+    red: ['cmo_exam', 'ground_packet', 'team_debrief'],
+  },
+  dizziness: {
+    yellow: ['vestibular_care', 'hydrate'],
+    amber: ['vestibular_care', 'cmo_exam', 'recheck_vitals'],
+    red: ['vestibular_care', 'cmo_exam', 'ground_packet'],
+  },
+  resistive_min: {
+    yellow: ['resistive_ex', 'vit_d'],
+    amber: ['resistive_ex', 'vit_d'],
+    red: ['resistive_ex', 'cmo_exam', 'vit_d'],
+  },
+  fluid_l: {
+    yellow: ['hydrate'],
+    amber: ['hydrate', 'recheck_vitals'],
+    red: ['hydrate', 'cmo_exam', 'recheck_vitals'],
+  },
 };
 
 export function actionsFor(indicatorId: HealthIndicatorId, severity: Severity): CountermeasureAction[] {
@@ -207,6 +241,8 @@ export const GUIDANCE_LIBRARY: CountermeasureAction[] = [
   ACTIONS.rest_block,
   ACTIONS.mood_check,
   ACTIONS.stress_break,
+  ACTIONS.team_debrief,
+  ACTIONS.vestibular_care,
   ACTIONS.glucose_snack,
   ACTIONS.o2_cabin,
   ACTIONS.co2_scrub,
