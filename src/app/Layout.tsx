@@ -11,16 +11,19 @@ import {
   IconGlobe,
   IconGuidance,
   IconRoutines,
+  IconSensor,
   IconSignal,
   IconStatus,
   IconTrends,
 } from '@/components/Icons';
+import { useLiveMonitor } from '@/features/monitor/useLiveMonitor';
 import { ANALYTICS_METRICS, NIcon, SEVERITY_RANK, SEV_TONE, summarize } from '@/features/trends/neon';
 
 const links = [
   { to: '/', label: 'Analytics', Icon: IconTrends },
   { to: '/status', label: 'Status', Icon: IconStatus },
   { to: '/checkin', label: 'Check-in', Icon: IconCheckIn },
+  { to: '/monitor', label: 'Monitor', Icon: IconSensor },
   { to: '/guidance', label: 'Guidance', Icon: IconGuidance },
   { to: '/routines', label: 'Routines', Icon: IconRoutines },
   { to: '/profile', label: 'Crew', Icon: IconCrew },
@@ -45,6 +48,11 @@ export function Layout() {
   const delay = profile ? EARTH_DELAY[profile.environment] : null;
   const term = useTerm();
   const audience = useAudience((s) => s.audience);
+  const recording = useLiveMonitor((s) => s.status === 'running');
+  const recDot = (to: string) =>
+    to === '/monitor' && recording ? (
+      <span className="h-2 w-2 animate-blink rounded-full bg-n-red" aria-label="Recording" />
+    ) : null;
 
   const watch = ANALYTICS_METRICS.map((m) => ({ ...m, s: summarize(history, m.id) }))
     .filter((m) => m.s && m.s.severity !== 'green')
@@ -85,6 +93,7 @@ export function Layout() {
             >
               <Icon width={18} height={18} />
               {label}
+              {recDot(to) && <span className="ml-auto">{recDot(to)}</span>}
             </NavLink>
           ))}
         </nav>
@@ -165,7 +174,7 @@ export function Layout() {
 
       <nav
         aria-label="Primary"
-        className="fixed inset-x-0 bottom-0 z-30 grid font-ui grid-cols-7 border-t border-n-line bg-n-ink pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 grid font-ui grid-cols-8 border-t border-n-line bg-n-ink pb-[env(safe-area-inset-bottom)] lg:hidden"
       >
         {links.map(({ to, label, Icon }) => (
           <NavLink
@@ -178,7 +187,10 @@ export function Layout() {
               }`
             }
           >
-            <Icon width={20} height={20} />
+            <span className="relative">
+              <Icon width={20} height={20} />
+              {recDot(to) && <span className="absolute -right-1 -top-0.5">{recDot(to)}</span>}
+            </span>
             {label}
           </NavLink>
         ))}

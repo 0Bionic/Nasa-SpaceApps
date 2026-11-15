@@ -13,6 +13,7 @@ import { RoutinesPage } from '@/features/routines/RoutinesPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
 import { BeyondPage } from '@/features/beyond/BeyondPage';
 import { ProtocolPage } from '@/features/protocol/ProtocolPage';
+import { MonitorPage } from '@/features/monitor/MonitorPage';
 import { Onboarding } from '@/features/onboarding/Onboarding';
 import { useAppStore } from '@/store/useAppStore';
 import {
@@ -83,6 +84,7 @@ export function App() {
           <Route index element={<TrendsPage />} />
           <Route path="status" element={<DashboardPage />} />
           <Route path="checkin" element={<CheckInPage />} />
+          <Route path="monitor" element={<MonitorPage />} />
           <Route path="trends" element={<LegacyTrendsRedirect />} />
           <Route path="guidance" element={<GuidancePage />} />
           <Route path="routines" element={<RoutinesPage />} />

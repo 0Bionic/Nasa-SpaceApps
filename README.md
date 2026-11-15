@@ -13,6 +13,7 @@ Mars is, on average, 140 million miles from Earth, and a radio message can take 
 | **Mission profiles** | Low Earth orbit, lunar surface or Mars transit: gravity, signal delay and the measured radiation background for that destination |
 | **Compounding hazards** | Rules that catch hazards feeding off one another, e.g. high CO₂ with poor sleep, or low fluids with dizziness |
 | **Early warning** | A straight-line fit of the last 7 check-ins flags readings that are still nominal but heading out of range ("likely Caution in ~3 check-ins") |
+| **Continuous monitoring** | The **Monitor** page, scoped to where NASA and CSA use continuous sensing: live **EVA** and **exercise** sessions (heart rate, SpO₂, breathing, signal quality) with on-device alerts that ignore dropouts and motion artifact; **24-hour recording sessions** (playable at 60× / 600×) stored on the device and sent with the next ground packet; continuous **sleep actigraphy**; a live **radiation dosimeter**. See [`docs/Continuous-Monitoring-Evidence.md`](docs/Continuous-Monitoring-Evidence.md) |
 | **Radiation budget** | Estimated mission dose tracked against NASA's 600 mSv career limit (NASA-STD-3001), not just a daily number |
 | **Live NASA space weather** | Solar flares and solar energetic particle events from NASA's DONKI service (api.nasa.gov), cached for offline use with a "last synced" time; a recent event flags shelter readiness and EVA no-go |
 | **Personal baselines** | Each reading is also compared with the astronaut's own last 14 check-ins; 2+ standard deviations away is flagged "unusual for you" even inside the normal range |
@@ -38,6 +39,7 @@ Mars is, on average, 140 million miles from Earth, and a radio message can take 
 | NASA-STD-3001 (Vols 1 and 2) and OCHMO technical briefs ([CO₂](https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf), [radiation](https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf), [standards overview](https://www.nasa.gov/sites/default/files/atoms/files/ochmo_standards_overview_sept_15_2021_francisco.pdf)) | Cabin CO₂ bands: green to 2.5 mmHg, yellow to the 3 mmHg limit [V2 6004], red above 4.5 mmHg. Radiation: daily bands at NASA's 0.8 / 1.3 mSv/day design limits, 600 mSv career [V1 4030], 250 mSv per solar event |
 | [NASA DONKI](https://kauai.ccmc.gsfc.nasa.gov/DONKI/) via [api.nasa.gov](https://api.nasa.gov/) | Live solar flares and SEP events on the Analytics page and in EVA readiness |
 | [CSA: Monitoring radiation for astronaut health](https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp) | Cumulative radiation tracking; neutrons are ~30% of ISS radiation, and an autonomous monitor like CANS could feed the radiation card |
+| [OCHMO-STD-100.1A](https://www.nasa.gov/wp-content/uploads/2023/04/ochmo-std-100.1a.pdf), [CSA Bio-Monitor](https://www.asc-csa.gc.ca/eng/sciences/astroskin.asp), NASA–CSA HERA Astroskin study | The Monitor page: live ECG/heart rate during EVA [6030], continuous sleep measurement [6039], radiation dosimetry [6022]; Bio-Monitor-style recording sessions stored on the device, because live streaming drained the battery in HERA |
 | [CSA: Why do we conduct science in space?](https://www.asc-csa.gc.ca/eng/iss/science/why-do-we-conduct-science-experiments-in-space.asp) | The "On Earth" page: aging, osteoporosis, cardiovascular disease, Type-2 diabetes and remote care |
 
 Each threshold is labelled **NASA standard** (cabin CO₂, radiation), **Clinical guideline** (AASM/SRS sleep, ACC/AHA blood pressure, ADA glucose, WHO pulse oximetry) or **App heuristic** (self-report scales, exercise and fluid cut-offs that still need expert review). Measured unshielded backgrounds (MSL RAD ≈1.84 mSv/day in deep space, Chang'e-4 ≈1.37 mSv/day on the Moon) are shown for context in the mission profile. CO₂ ppm values assume a 1-atmosphere cabin; NASA writes the limit in mmHg. The full table and reference list are in the app under **Guidance → Sources & method**, and in [`src/domain/evidence.ts`](src/domain/evidence.ts).
@@ -95,6 +97,7 @@ IndexedDB (Dexie) — offline, on-device
 
 - Team plan and thresholds: [`docs/AHMS-Project-Plan.md`](docs/AHMS-Project-Plan.md)
 - Challenge brief: [`in md file of 10 pages.md`](in%20md%20file%20of%2010%20pages.md)
+- Continuous monitoring evidence (NASA/CSA): [`docs/Continuous-Monitoring-Evidence.md`](docs/Continuous-Monitoring-Evidence.md)
 - Implementation / video overview: [`docs/Implementation-and-Video-Overview.md`](docs/Implementation-and-Video-Overview.md)
 
 ## Team ownership (4 developers)
@@ -109,7 +112,7 @@ IndexedDB (Dexie) — offline, on-device
 ## Honest claims
 
 - **Rule-based, explainable triage.** No machine learning or AI diagnosis.
-- **Sensors are simulated.** "Fill from sensors" generates plausible random values; real wearables are future work.
+- **Sensors are simulated.** "Fill from sensors" and every Monitor-page signal (EVA, exercise, 24-h sessions, actigraphy, dosimeter) are generated; real wearables are future work. The exercise/EVA heart-rate ceiling (220 − age, age 40 assumed) is an app heuristic, not a NASA limit.
 - **Body map is an interactive SVG diagram**, not 3D.
 - **The ground packet is packaged, not secured.** Notes are sealed with a fixed demo passphrase; a real mission would use the agency's key management.
 - **Crewmates on the crew board are simulated** from your own history.

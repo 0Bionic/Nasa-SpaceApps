@@ -3,6 +3,8 @@ import type { CheckInRecord, CrewProfile } from '@/domain/types';
 import { encryptText } from './crypto';
 import { getActiveProfile, listCheckIns } from './repositories';
 import { useUplinks } from './uplink';
+import { markDownlinked, pendingDownlink } from './monitorRepo';
+import { downsample, type MonitorSession } from '@/domain/monitoring';
 
 /** FHIR-lite / demo ground packet for flight surgeons */
 export async function buildGroundPacket() {
@@ -11,6 +13,7 @@ export async function buildGroundPacket() {
   const latest = checkIns[0];
 
   const observations = checkIns.flatMap((c) => vitalsToObservations(c));
+  const sessions = await pendingDownlink();
 
   const bundle = {
     resourceType: 'Bundle',
@@ -33,6 +36,7 @@ export async function buildGroundPacket() {
         },
       },
       ...observations.map((o) => ({ resource: o })),
+      ...sessions.map((m) => ({ resource: sessionToObservation(m) })),
       latest
         ? {
             resource: {
@@ -86,6 +90,34 @@ export async function buildGroundPacket() {
   };
 }
 
+/**
+ * A recorded monitoring session (EVA, exercise or 24 h), sent once and then marked
+ * downlinked: the store-and-forward model CSA Bio-Monitor uses. Samples are thinned
+ * to one per minute-equivalent to keep the packet small.
+ */
+function sessionToObservation(m: MonitorSession) {
+  return {
+    resourceType: 'Observation',
+    id: m.id,
+    status: 'final',
+    code: { text: `continuous-monitoring-${m.mode}` },
+    effectivePeriod: { start: m.startedAt, end: m.endedAt },
+    subject: { reference: `Patient/${m.profileId}` },
+    extension: [
+      { url: 'durationSeconds', valueInteger: m.durationS },
+      { url: 'worstSeverity', valueString: m.worstSeverity },
+      { url: 'stats', valueString: JSON.stringify(m.stats) },
+      { url: 'events', valueString: JSON.stringify(m.events) },
+      {
+        url: 'samples',
+        valueString: JSON.stringify(
+          downsample(m.samples, 240).map((s) => [s.t, s.hr, s.spo2, s.quality, s.activity]),
+        ),
+      },
+    ],
+  };
+}
+
 function vitalsToObservations(c: CheckInRecord) {
   const pairs: [string, number, string][] = [
     ['heart-rate', c.hr, '/min'],
@@ -120,6 +152,14 @@ function vitalsToObservations(c: CheckInRecord) {
 
 export async function downloadGroundPacket() {
   const packet = await buildGroundPacket();
+  const sent = packet.entry
+    .map((e) => (e as { resource?: { id?: string; code?: { text?: string } } }).resource)
+    .filter((r) => r?.code?.text?.startsWith('continuous-monitoring-'))
+    .map((r) => r!.id!);
+  if (sent.length) {
+    await markDownlinked(sent);
+    window.dispatchEvent(new CustomEvent('aether:downlinked'));
+  }
   // Queue a simulated uplink so the crew sees transit time and earliest reply.
   useUplinks.getState().enqueue((await getActiveProfile()).environment);
   if (import.meta.env.VITE_ARTIFACT) {

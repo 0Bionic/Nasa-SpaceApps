@@ -4,3 +4,4 @@ export * from './repositories';
 export * from './routines';
 export * from './exportPacket';
 export * from './crypto';
+export * from './monitorRepo';

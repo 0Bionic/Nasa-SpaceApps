@@ -23,7 +23,13 @@ export type SourceId =
   | 'std-3001-v2'
   | 'ochmo-radiation'
   | 'ochmo-standards'
-  | 'nasa-donki';
+  | 'nasa-donki'
+  | 'ochmo-100'
+  | 'nasa-telemed'
+  | 'nasa-hr-sensor'
+  | 'csa-biomonitor'
+  | 'nasa-hera-astroskin'
+  | 'nasa-cardiac-evidence';
 
 export interface Source {
   id: SourceId;
@@ -140,6 +146,48 @@ export const SOURCES: Record<SourceId, Source> = {
     org: 'American Diabetes Association, Standards of Care',
     title: 'Hypoglycemia classification',
     note: 'Level 1 hypoglycemia < 70 mg/dL; level 2 < 54 mg/dL. Hyperglycemia above 180 mg/dL.',
+  },
+  'ochmo-100': {
+    id: 'ochmo-100',
+    org: 'NASA Office of the Chief Health & Medical Officer',
+    title: 'OCHMO-STD-100.1A, Space Flight Medical Selection, Recertification and Mission Evaluation (2024)',
+    url: 'https://www.nasa.gov/wp-content/uploads/2023/04/ochmo-std-100.1a.pdf',
+    note: 'In flight: weekly private medical conferences [6003], periodic health checks [6002], ECG and heart rate during EVA [6030], sleep measured continuously [6039], radiation monitored all mission [6022].',
+  },
+  'nasa-telemed': {
+    id: 'nasa-telemed',
+    org: 'NASA Exploration Medical Capability (Antonsen & Walton, 2017)',
+    title: 'NASA and Telemedicine: Now and Beyond',
+    url: 'https://ntrs.nasa.gov/api/citations/20170009943/downloads/20170009943.pdf',
+    note: 'ISS live monitoring relies on the ground; exploration missions need space-based (onboard) monitoring.',
+  },
+  'nasa-hr-sensor': {
+    id: 'nasa-hr-sensor',
+    org: 'NASA (project summary, 2014–2015)',
+    title: 'Miniature Biometric Sensor Project',
+    url: 'https://ntrs.nasa.gov/api/citations/20150016028/downloads/20150016028.pdf',
+    note: 'Heart-rate monitoring is a medical requirement during ISS exercise, fitness tests and EVA; current sensors suffer drop-out and motion artifact.',
+  },
+  'csa-biomonitor': {
+    id: 'csa-biomonitor',
+    org: 'Canadian Space Agency',
+    title: 'Bio-Monitor: Keeping an eye on astronauts’ vital signs',
+    url: 'https://www.asc-csa.gc.ca/eng/sciences/astroskin.asp',
+    note: 'Smart shirt and headband on the ISS since 2018; records sessions on the device and downloads them to Earth afterwards.',
+  },
+  'nasa-hera-astroskin': {
+    id: 'nasa-hera-astroskin',
+    org: 'NASA Ames & Canadian Space Agency (Toscano et al., 2017)',
+    title: 'Wearable Biosensor Monitor to Support Autonomous Crew Health and Readiness to Perform',
+    url: 'https://ntrs.nasa.gov/api/citations/20190001996/downloads/20190001996.pdf',
+    note: '24-hour recording worked when stored on the device; live Bluetooth streaming drained the battery in under 24 h.',
+  },
+  'nasa-cardiac-evidence': {
+    id: 'nasa-cardiac-evidence',
+    org: 'NASA Human Research Program (2017)',
+    title: 'Evidence Report: Risk of Cardiac Rhythm Problems During Spaceflight',
+    url: 'https://ntrs.nasa.gov/api/citations/20170005625/downloads/20170005625.pdf',
+    note: 'After the first four Shuttle flights, routine ECG monitoring was done only during EVA; ISS rhythm data came from 24-h Holter recordings.',
   },
   'who-oximetry': {
     id: 'who-oximetry',
