@@ -2,7 +2,7 @@ import { useId, useState } from 'react';
 import { INDICATORS } from '@/domain/indicators';
 import type { TriageResult } from '@/domain/types';
 import { SeverityGlyph } from './SeverityBadge';
-import { SEVERITY_COLOR, SEVERITY_LABEL, formatValue } from './vitals';
+import { SEVERITY_COLOR, SEVERITY_LABEL, alpha, formatValue } from './vitals';
 import { IconChevron } from './Icons';
 
 const TIER_NAME: Record<number, string> = {
@@ -28,7 +28,7 @@ export function AlertCard({
   return (
     <article
       className="relative overflow-hidden rounded border border-rule bg-hull"
-      style={open ? { borderColor: `${color}66` } : undefined}
+      style={open ? { borderColor: alpha(color, 40) } : undefined}
     >
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: color }} aria-hidden="true" />
       <button
@@ -67,7 +67,7 @@ export function AlertCard({
                 <li key={action.id} className="flex gap-3 border border-rule bg-void px-3 py-2">
                   <span
                     className="readout mt-px flex h-6 w-6 shrink-0 items-center justify-center rounded-full border text-xs text-star"
-                    style={{ borderColor: action.tier === 3 ? '#FC3D2188' : '#2A5AA0' }}
+                    style={{ borderColor: action.tier === 3 ? alpha('rgb(var(--c-red))', 53) : 'rgb(var(--c-line-strong))' }}
                     title={TIER_NAME[action.tier]}
                   >
                     {action.tier}

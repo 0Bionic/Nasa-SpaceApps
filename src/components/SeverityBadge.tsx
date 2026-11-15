@@ -1,5 +1,5 @@
 import type { Severity } from '@/domain/types';
-import { SEVERITY_COLOR, SEVERITY_LABEL } from './vitals';
+import { SEVERITY_COLOR, SEVERITY_LABEL, alpha } from './vitals';
 
 /**
  * Status tag. Severity is carried by a distinct glyph shape as well as
@@ -20,8 +20,8 @@ export function SeverityBadge({
       }`}
       style={{
         color,
-        borderColor: `${color}55`,
-        background: `${color}14`,
+        borderColor: alpha(color, 33),
+        background: alpha(color, 8),
       }}
     >
       <SeverityGlyph severity={severity} size={size === 'sm' ? 8 : 9} />

@@ -6,11 +6,16 @@ import type {
   Severity,
 } from '@/domain/types';
 
+/** Mix a CSS color with transparency (works with var()-based colors). */
+export function alpha(color: string, pct: number): string {
+  return `color-mix(in srgb, ${color} ${pct}%, transparent)`;
+}
+
 export const SEVERITY_COLOR: Record<Severity, string> = {
-  green: '#4AA564',
-  yellow: '#FF9D1E',
-  amber: '#F9AA43',
-  red: '#FC3D21',
+  green: 'rgb(var(--sev-green))',
+  yellow: 'rgb(var(--sev-yellow))',
+  amber: 'rgb(var(--sev-amber))',
+  red: 'rgb(var(--sev-red))',
 };
 
 export const SEVERITY_LABEL: Record<Severity, string> = {

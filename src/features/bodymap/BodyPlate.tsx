@@ -174,25 +174,25 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
         {/* centre axis */}
         <line
           x1={CX} y1={14} x2={CX} y2={500}
-          stroke="#1A3F78" strokeDasharray="2 5"
+          stroke="rgb(var(--c-line))" strokeDasharray="2 5"
         />
 
         {/* figure */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           <path
             d={BODY_PATH}
-            stroke="#A7B6CE"
+            stroke="rgb(var(--c-muted))"
             strokeWidth={1.4}
-            fill="#0B1E42"
+            fill="rgb(var(--c-bg))"
             fillOpacity={0.7}
           />
           <ellipse
             cx={CX} cy={58} rx={21} ry={26}
-            stroke="#A7B6CE"
+            stroke="rgb(var(--c-muted))"
             strokeWidth={1.4}
-            fill="#0B1E42"
+            fill="rgb(var(--c-bg))"
           />
-          <g stroke="#6F84A6" strokeWidth={1}>
+          <g stroke="rgb(var(--c-faint))" strokeWidth={1}>
             {DETAIL_PATHS.map((d) => (
               <path key={d} d={d} />
             ))}
@@ -226,13 +226,13 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                 <>
                   <path
                     d={`M${node[0]},${node[1]} L${lx},${node[1]}`}
-                    stroke={isSel ? color : '#2A5AA0'}
+                    stroke={isSel ? color : 'rgb(var(--c-line-strong))'}
                     strokeWidth={isSel ? 1.4 : 1}
                     fill="none"
                   />
                   <circle
                     cx={lx} cy={node[1]} r={2}
-                    fill={isSel ? color : '#2A5AA0'}
+                    fill={isSel ? color : 'rgb(var(--c-line-strong))'}
                   />
                   <g>
                     <rect
@@ -255,7 +255,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                       y={node[1] + 14}
                       textAnchor={anchor}
                       className="text-[12px]"
-                      fill={reading.severity === 'green' ? '#A7B6CE' : color}
+                      fill={reading.severity === 'green' ? 'rgb(var(--c-muted))' : color}
                     >
                       {reading.detail}
                     </text>
@@ -267,13 +267,13 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
               <g>
                 <circle
                   cx={node[0]} cy={node[1]} r={isSel ? 10 : 8}
-                  fill="#060F24" fillOpacity={0.85}
+                  fill="rgb(var(--c-bg))" fillOpacity={0.85}
                   stroke={color} strokeWidth={isSel ? 2 : 1.25}
                 />
                 <circle cx={node[0]} cy={node[1]} r={isSel ? 4.5 : 3.5} fill={color} />
                 <circle
                   cx={node[0]} cy={node[1]} r={14}
-                  fill="none" stroke="#5BA8FF" strokeWidth={1.5}
+                  fill="none" stroke="rgb(var(--c-accent))" strokeWidth={1.5}
                   className="plate-focus opacity-0"
                 />
               </g>
@@ -307,7 +307,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                     </span>
                     <span
                       className="block truncate text-xs"
-                      style={{ color: r.severity === 'green' ? '#A7B6CE' : SEVERITY_COLOR[r.severity] }}
+                      style={{ color: r.severity === 'green' ? 'rgb(var(--c-muted))' : SEVERITY_COLOR[r.severity] }}
                     >
                       {r.detail}
                     </span>

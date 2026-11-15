@@ -76,13 +76,13 @@ export function RoutinesPage() {
         </div>
         <div className="flex items-center gap-4">
           <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
-            <circle cx="42" cy="42" r={R} fill="none" stroke="#1A3F78" strokeWidth="6" />
+            <circle cx="42" cy="42" r={R} fill="none" stroke="rgb(var(--c-line))" strokeWidth="6" />
             <circle
               cx="42"
               cy="42"
               r={R}
               fill="none"
-              stroke={pct === 1 ? '#4AA564' : '#105BD8'}
+              stroke={pct === 1 ? 'rgb(var(--c-accent))' : 'rgb(var(--c-blue))'}
               strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={C}

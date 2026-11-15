@@ -90,18 +90,18 @@ export function DashboardPage() {
       {latest?.overallSeverity === 'red' && !criticalDismissed && worst && (
         <div
           role="alert"
-          className="flex flex-col gap-3 rounded border border-nasa-red/45 bg-[#3A1210] px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+          className="flex flex-col gap-3 rounded border border-nasa-red/45 bg-nasa-red/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
         >
           <div className="flex gap-3">
             <span className="mt-1.5">
               <SeverityGlyph severity="red" size={11} />
             </span>
             <div>
-              <p className="font-semibold text-[#FFB4A8]">
+              <p className="font-semibold text-alert">
                 {INDICATORS[worst.indicatorId].label} at {withUnit(worst.indicatorId, worst.value)} is past
                 the critical limit
               </p>
-              <p className="mt-0.5 text-sm text-[#F0C4BC]">
+              <p className="mt-0.5 text-sm text-alert-sub">
                 Follow the steps below and prepare a packet for the ground flight surgeon.
               </p>
             </div>
@@ -111,7 +111,7 @@ export function DashboardPage() {
               <IconExport width={16} height={16} />
               Export ground packet
             </button>
-            <button type="button" className="btn text-[#F0C4BC] hover:bg-white/5" onClick={dismissCritical}>
+            <button type="button" className="btn text-alert-sub hover:bg-star/5" onClick={dismissCritical}>
               Dismiss
             </button>
           </div>
@@ -155,7 +155,7 @@ export function DashboardPage() {
                 <p className="text-xs text-dust">{label}</p>
                 <p
                   className="readout mt-1 text-xl"
-                  style={{ color: sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[sev] }}
+                  style={{ color: sev === 'green' ? 'rgb(var(--c-text))' : SEVERITY_COLOR[sev] }}
                 >
                   {value != null ? formatValue(id, value) : '–'}
                   <span className="ml-1 text-xs font-normal text-faint">{INDICATORS[id].unit}</span>
@@ -231,7 +231,7 @@ export function DashboardPage() {
             <h2 id="readings-title" className="h-section">
               Latest readings
             </h2>
-            <Link to="/trends" className="text-sm font-medium text-limb hover:underline">
+            <Link to="/" className="text-sm font-medium text-limb hover:underline">
               See trends
             </Link>
           </div>
@@ -249,7 +249,7 @@ export function DashboardPage() {
                   <dd className="mt-1.5">
                     <span
                       className="readout text-[1.75rem] leading-none"
-                      style={{ color: sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[sev] }}
+                      style={{ color: sev === 'green' ? 'rgb(var(--c-text))' : SEVERITY_COLOR[sev] }}
                     >
                       {value != null ? formatValue(def.id, value) : '–'}
                     </span>

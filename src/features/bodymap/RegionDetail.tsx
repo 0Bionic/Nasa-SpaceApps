@@ -78,7 +78,7 @@ export function RegionDetail({ regionId, checkIn, onClose }: Props) {
             <div key={id} className="py-3">
               <div className="flex items-baseline justify-between gap-3">
                 <dt className="text-sm text-dust">{def.label}</dt>
-                <dd className="readout text-base" style={{ color: sev === 'green' ? '#FFFFFF' : SEVERITY_COLOR[sev] }}>
+                <dd className="readout text-base" style={{ color: sev === 'green' ? 'rgb(var(--c-text))' : SEVERITY_COLOR[sev] }}>
                   {value != null ? formatValue(id, value) : '–'}
                   <span className="ml-1 text-xs font-normal text-faint">{def.unit}</span>
                 </dd>

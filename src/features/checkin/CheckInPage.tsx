@@ -121,7 +121,7 @@ export function CheckInPage() {
     try {
       await saveCheckIn(form);
       await refresh();
-      navigate('/');
+      navigate('/status');
     } catch (err) {
       setError(
         err instanceof Error
@@ -212,7 +212,7 @@ export function CheckInPage() {
                 <label className="mt-2 block text-xs text-dust sm:mt-0">
                   Level {level}
                   <input
-                    className="mt-1 w-full accent-[#105BD8]"
+                    className="mt-1 w-full accent-limb-deep"
                     type="range"
                     min={0}
                     max={10}
@@ -304,7 +304,7 @@ export function CheckInPage() {
 
       {error && (
         <p
-          className="mt-4 rounded-md border border-nasa-red/40 bg-nasa-red/10 px-3 py-2 text-sm text-[#FFB4A8]"
+          className="mt-4 rounded-md border border-nasa-red/40 bg-nasa-red/10 px-3 py-2 text-sm text-alert"
           role="alert"
         >
           {error}
@@ -382,7 +382,7 @@ function InstrumentRow({
         <BandScale id={id} value={valid ? value : null} severity={sev} height={6} />
         <p
           className="mt-1 flex items-center gap-1.5 text-xs"
-          style={{ color: sev === 'green' ? '#A7B6CE' : SEVERITY_COLOR[sev] }}
+          style={{ color: sev === 'green' ? 'rgb(var(--c-muted))' : SEVERITY_COLOR[sev] }}
         >
           <SeverityGlyph severity={sev} size={8} />
           {SEVERITY_LABEL[sev]}

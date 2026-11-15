@@ -1,35 +1,59 @@
 /** @type {import('tailwindcss').Config} */
+/** Color backed by an "R G B" CSS variable, so Tailwind opacity modifiers still work. */
+const v = (name) => `rgb(var(${name}) / <alpha-value>)`;
+
 /**
- * Palette inspired by NASA insignia + NASA Web Design System:
- * blue #0B3D91 / #105BD8, red #FC3D21, deep navy fields, white type.
+ * NASA theme: pitch-black fields, NASA blue #105BD8 (+ glowing #3D8BFF accent),
+ * NASA red #FC3D21, white type.
  */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       colors: {
-        void: '#060F24',
-        hull: '#0B1E42',
-        deck: '#0E2C5C',
-        rule: '#1A3F78',
-        'rule-strong': '#2A5AA0',
-        star: '#FFFFFF',
-        dust: '#A7B6CE',
-        faint: '#6F84A6',
-        limb: '#5BA8FF',
-        'limb-deep': '#105BD8',
-        'nasa-blue': '#0B3D91',
-        'nasa-primary': '#105BD8',
-        'nasa-red': '#FC3D21',
+        // Every color reads a CSS variable so light/dark mode can swap it
+        // (values live in src/styles/index.css).
+        void: v('--c-bg'),
+        hull: v('--c-bg'),
+        deck: v('--c-deck'),
+        rule: v('--c-line'),
+        'rule-strong': v('--c-line-strong'),
+        star: v('--c-text'),
+        dust: v('--c-muted'),
+        faint: v('--c-faint'),
+        limb: v('--c-accent'),
+        'limb-deep': v('--c-blue'),
+        'nasa-blue': v('--c-nasa-blue'),
+        'nasa-primary': v('--c-blue'),
+        'nasa-red': v('--c-red'),
+        alert: v('--c-alert'),
+        'alert-sub': v('--c-alert-sub'),
+        n: {
+          ink: v('--c-bg'),
+          panel: v('--c-bg'),
+          raised: v('--c-bg'),
+          line: v('--c-line'),
+          neon: v('--c-accent'),
+          blue: v('--c-blue'),
+          text: v('--c-text'),
+          muted: v('--c-muted'),
+          faint: v('--c-dim'),
+          green: v('--sev-green'),
+          amber: v('--sev-amber'),
+          red: v('--c-red'),
+        },
         sev: {
-          green: '#4AA564',
-          yellow: '#FF9D1E',
-          amber: '#F9AA43',
-          red: '#FC3D21',
+          green: v('--sev-green'),
+          yellow: v('--sev-yellow'),
+          amber: v('--sev-amber'),
+          red: v('--sev-red'),
         },
       },
       fontFamily: {
-        sans: ['IBM Plex Sans', 'Segoe UI', 'system-ui', 'sans-serif'],
+        sans: ['Public Sans', 'Segoe UI', 'system-ui', 'sans-serif'],
+        display: ['Public Sans', 'system-ui', 'sans-serif'],
+        ui: ['Public Sans', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       fontSize: {
         '2xs': ['0.6875rem', { lineHeight: '1rem' }],

@@ -44,7 +44,7 @@ export function GuidancePage() {
                 <div className="flex items-start gap-3 border-b border-rule px-4 py-4">
                   <span
                     className={`readout flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm ${
-                      tier === 3 ? 'border-nasa-red/60 text-[#FFB4A8]' : 'border-rule-strong text-star'
+                      tier === 3 ? 'border-nasa-red/60 text-alert' : 'border-rule-strong text-star'
                     }`}
                   >
                     {tier}

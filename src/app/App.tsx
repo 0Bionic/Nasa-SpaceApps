@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BrandMark, Layout } from './Layout';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { CheckInPage } from '@/features/checkin/CheckInPage';
@@ -13,6 +13,12 @@ import {
   remindersPreferred,
   scheduleInAppTick,
 } from '@/features/routines/reminders';
+
+/** Old /trends links (e.g. /trends?metric=hr) now land on the Analytics home page. */
+function LegacyTrendsRedirect() {
+  const { search } = useLocation();
+  return <Navigate to={`/${search}`} replace />;
+}
 
 export function App() {
   const ready = useAppStore((s) => s.ready);
@@ -52,9 +58,10 @@ export function App() {
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
       <Routes>
         <Route element={<Layout />}>
-          <Route index element={<DashboardPage />} />
+          <Route index element={<TrendsPage />} />
+          <Route path="status" element={<DashboardPage />} />
           <Route path="checkin" element={<CheckInPage />} />
-          <Route path="trends" element={<TrendsPage />} />
+          <Route path="trends" element={<LegacyTrendsRedirect />} />
           <Route path="guidance" element={<GuidancePage />} />
           <Route path="routines" element={<RoutinesPage />} />
           <Route path="profile" element={<ProfilePage />} />
