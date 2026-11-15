@@ -13,6 +13,7 @@ import { SeverityGlyph } from '@/components/SeverityBadge';
 import { SEVERITY_COLOR, SEVERITY_LABEL, withUnit } from '@/components/vitals';
 import { useAppStore } from '@/store/useAppStore';
 import { AstronautFigure, CX } from './AstronautFigure';
+import { useLargeText } from '@/app/textSize';
 
 interface Anchor {
   node: [number, number];
@@ -102,9 +103,11 @@ interface Props {
 
 export function BodyPlate({ checkIn, selected, onSelect }: Props) {
   const readings = useMemo(() => regionReadings(checkIn), [checkIn]);
-  const compact = useIsCompact();
+  const narrow = useIsCompact();
+  // Large text makes the side callouts too wide, so use the list layout instead.
+  const compact = narrow || useLargeText();
   const profile = useAppStore((s) => s.profile);
-  const viewBox = compact ? `${CX - 125} 10 250 495` : '0 0 600 510';
+  const viewBox = compact ? `${CX - 125} 10 250 495` : '-60 0 720 510';
 
   const keyActivate = (id: BodyRegionId) => (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
