@@ -30,9 +30,9 @@ export function MissionProfileStrip({ environment, avgDose }: { environment: Mis
 function Cell({ label, value, sub }: { label: string; value: string; sub: string }) {
   return (
     <div className="bg-n-panel px-4 py-3.5">
-      <p className="text-[11px] text-n-muted">{label}</p>
+      <p className="text-xs text-n-muted">{label}</p>
       <p className="mt-0.5 font-display text-lg font-medium">{value}</p>
-      <p className="mt-0.5 text-[11px] leading-snug text-n-muted">{sub}</p>
+      <p className="mt-0.5 text-xs leading-snug text-n-muted">{sub}</p>
     </div>
   );
 }
@@ -44,11 +44,11 @@ export function CompoundAlertsPanel({ alerts }: { alerts: CompoundAlert[] }) {
     <section aria-labelledby="compound" className="n-card space-y-3 p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NIcon name="bolt" className="text-n-amber" />
-        <h2 id="compound" className="text-[15px] font-medium">
+        <h2 id="compound" className="text-lg font-medium">
           Compounding hazards
         </h2>
         <span className="n-pill">{alerts.length}</span>
-        <span className="ml-auto text-[11px] text-n-muted">
+        <span className="ml-auto text-xs text-n-muted">
           NASA: hazards &ldquo;can feed off one another&rdquo; ·{' '}
           <Link to="/guidance" className="text-n-neon hover:underline">
             method
@@ -60,10 +60,10 @@ export function CompoundAlertsPanel({ alerts }: { alerts: CompoundAlert[] }) {
           const t = SEV_TONE[a.severity];
           return (
             <li key={a.id} className={`space-y-1.5 rounded-[14px] border p-4 ${a.severity === 'green' ? 'border-n-line' : t.border}`}>
-              <p className="flex flex-wrap items-center gap-2 text-[13px] font-medium">
+              <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
                 <span className={t.text}>●</span>
                 {a.title}
-                <span className={`font-mono text-[10px] uppercase ${t.text}`}>{SEV_SHORT[a.severity]}</span>
+                <span className={`font-mono text-2xs uppercase ${t.text}`}>{SEV_SHORT[a.severity]}</span>
               </p>
               <p className="text-xs leading-relaxed text-n-muted">{a.detail}</p>
               <p className="text-xs">
@@ -101,12 +101,12 @@ export function UplinkQueue() {
   };
   return (
     <div className="space-y-1.5 border-t border-n-line pt-3">
-      <p className="text-[11px] font-medium text-n-muted">Uplink queue</p>
+      <p className="text-xs font-medium text-n-muted">Uplink queue</p>
       <ul className="space-y-1.5">
         {uplinks.map((u) => {
           const st = uplinkStatus(u, now);
           return (
-            <li key={u.id} className="flex items-start justify-between gap-2 font-mono text-[11px]">
+            <li key={u.id} className="flex items-start justify-between gap-2 font-mono text-xs">
               <span className="text-n-muted">{time(u.sentAt)}</span>
               <span className={`text-right ${st === 'transit' ? 'text-n-amber' : st === 'awaiting-reply' ? 'text-n-neon' : 'text-n-green'}`}>
                 {st === 'transit' && `In transit · arrives in ${left(u.arrivesAt)}`}
@@ -128,12 +128,12 @@ export function ReadinessCard({ status, reasons }: { status: 'go' | 'caution' | 
   return (
     <section aria-labelledby="readiness" className="n-card flex flex-col gap-3 p-5 sm:flex-row sm:items-start">
       <div className="shrink-0">
-        <p className="text-[11px] text-n-muted">EVA &amp; vehicle readiness</p>
+        <p className="text-xs text-n-muted">EVA &amp; vehicle readiness</p>
         <p id="readiness" className={`font-display text-3xl font-semibold ${tone.text}`}>
           {label}
         </p>
       </div>
-      <div className="min-w-0 flex-1 space-y-1.5 text-[13px]">
+      <div className="min-w-0 flex-1 space-y-1.5 text-sm">
         {reasons.length === 0 ? (
           <p className="text-n-muted">Oxygen, balance, fatigue, sleep, temperature, heart rate and blood pressure are all nominal.</p>
         ) : (
@@ -146,7 +146,7 @@ export function ReadinessCard({ status, reasons }: { status: 'go' | 'caution' | 
             ))}
           </ul>
         )}
-        <p className="text-[11px] text-n-muted">
+        <p className="text-xs text-n-muted">
           App heuristic from the latest check-in, for NASA&rsquo;s spacewalk and sensorimotor risks. The flight surgeon makes the
           real call.
         </p>

@@ -41,7 +41,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       aria-label={`Switch to ${next} mode`}
       title={`Switch to ${next} mode`}
       className={`flex items-center gap-2 rounded-[10px] border border-n-line text-n-muted transition-colors hover:border-n-neon/50 hover:text-n-text ${
-        compact ? 'h-8 w-8 justify-center' : 'w-full px-3 py-2 text-[13px]'
+        compact ? 'h-11 w-11 justify-center' : 'w-full px-3 py-2 text-sm'
       }`}
     >
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

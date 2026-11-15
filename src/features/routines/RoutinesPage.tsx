@@ -122,7 +122,7 @@ export function RoutinesPage() {
                 {slotDone ? <IconCheck width={14} height={14} strokeWidth={2.2} /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
               </span>
               <div>
-                <h2 className="text-[0.9375rem] font-semibold text-star">{slot.label}</h2>
+                <h2 className="text-lg font-semibold text-star">{slot.label}</h2>
                 <ul className="mt-3 space-y-2">
                   {items.map((routine) => {
                     const isDone = done.includes(routine.id);

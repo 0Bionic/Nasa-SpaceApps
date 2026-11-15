@@ -12,18 +12,18 @@
     --c-line-strong: 30 74 143;
     --c-text: 255 255 255;
     --c-muted: 154 168 194;
-    --c-faint: 107 122 153;
+    --c-faint: 140 154 182;
     --c-dim: 74 88 120;
     --c-accent: 61 139 255;
     --c-blue: 16 91 216;
     --c-nasa-blue: 11 61 145;
-    --c-red: 252 61 33;
+    --c-red: 255 92 66;
     --c-alert: 255 180 168;
     --c-alert-sub: 240 196 188;
     --sev-green: 43 212 107;
     --sev-yellow: 255 214 10;
     --sev-amber: 255 176 0;
-    --sev-red: 252 61 33;
+    --sev-red: 255 92 66;
     --glow: 0 0 22px rgb(61 139 255 / 0.28), 0 0 4px rgb(61 139 255 / 0.45);
     --glow-soft: 0 0 16px rgb(61 139 255 / 0.14);
     --glow-hot: 0 0 18px rgb(61 139 255 / 0.55);
@@ -39,19 +39,20 @@
     --c-line-strong: 150 172 207;
     --c-text: 11 23 48;
     --c-muted: 72 86 116;
-    --c-faint: 92 106 134;
+    --c-faint: 74 88 118;
     --c-dim: 168 180 202;
     --c-accent: 16 91 216;
     --c-blue: 16 91 216;
     --c-nasa-blue: 11 61 145;
-    --c-red: 214 40 18;
+    --c-red: 184 32 14;
     --c-alert: 180 35 24;
     --c-alert-sub: 122 39 26;
     /* Darker in light mode so status text meets WCAG AA (4.5:1) on white. */
-    --sev-green: 21 128 61;
-    --sev-yellow: 133 100 0;
-    --sev-amber: 180 83 9;
-    --sev-red: 214 40 18;
+    /* NASA-STD-3001 Vol. 2 App. F: text contrast 6:1 or more on white. */
+    --sev-green: 17 102 49;
+    --sev-yellow: 112 84 0;
+    --sev-amber: 150 68 6;
+    --sev-red: 184 32 14;
     --glow: 0 4px 18px rgb(16 91 216 / 0.14), 0 0 0 1px rgb(16 91 216 / 0.06);
     --glow-soft: 0 2px 10px rgb(11 23 48 / 0.06);
     --glow-hot: 0 4px 12px rgb(16 91 216 / 0.3);
@@ -62,6 +63,16 @@
   body,
   #root {
     min-height: 100%;
+  }
+
+  /* Large text mode (for an unwell crew member): scales every rem-based size,
+     moving key text toward NASA's preferred 0.4 deg character height. */
+  html[data-text='large'] {
+    font-size: 137.5%;
+  }
+  /* At large sizes, rows of buttons and chips wrap instead of running off a phone screen. */
+  html[data-text='large'] main .flex:not(.flex-col) {
+    flex-wrap: wrap;
   }
 
   body {
@@ -94,13 +105,13 @@
 
 @layer components {
   .h-page {
-    @apply text-2xl font-semibold leading-tight text-star sm:text-[1.75rem];
+    @apply text-[1.875rem] font-semibold leading-tight text-star sm:text-[2.25rem];
   }
   .h-section {
-    @apply text-base font-semibold leading-tight text-star;
+    @apply text-xl font-semibold leading-tight text-star;
   }
   .lede {
-    @apply max-w-[60ch] text-sm leading-normal text-dust;
+    @apply max-w-[65ch] text-base leading-relaxed text-dust;
   }
   .readout {
     @apply font-medium tabular-nums;
@@ -112,7 +123,7 @@
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] px-3.5 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-[10px] px-4 py-2 text-center text-base font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
   }
   .btn-primary {
     @apply btn bg-limb-deep text-white hover:brightness-110;
@@ -126,19 +137,19 @@
   }
 
   .field {
-    @apply w-full rounded-[10px] border border-rule bg-void px-3 py-2 text-star placeholder:text-faint focus:border-limb focus:outline-none;
+    @apply min-h-[3rem] w-full rounded-[10px] border border-rule bg-void px-3.5 py-2.5 text-base text-star placeholder:text-faint focus:border-limb focus:outline-none;
     /* Keep the focused field clear of the sticky Save bar on Check-in. */
     scroll-margin-bottom: 140px;
   }
   .field-label {
-    @apply mb-1 block text-sm font-medium text-dust;
+    @apply mb-1.5 block text-base font-semibold text-star;
   }
 
   .seg {
-    @apply inline-flex rounded-[10px] border border-rule bg-void p-0.5;
+    @apply inline-flex max-w-full flex-wrap rounded-[10px] border border-rule bg-void p-0.5;
   }
   .seg-item {
-    @apply rounded-lg px-3 py-1.5 text-sm font-medium text-dust hover:text-star;
+    @apply min-h-[2.75rem] rounded-lg px-4 py-2 text-base font-medium text-dust hover:text-star;
   }
   .seg-item[aria-pressed='true'] {
     @apply bg-limb-deep text-white;
@@ -158,46 +169,46 @@
     @apply rounded-2xl border border-n-line bg-n-panel n-glow-soft;
   }
   .n-btn {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] bg-n-blue px-3.5 py-2 text-[13px] font-semibold text-white transition-[filter] n-glow-hot hover:brightness-110;
+    @apply inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-[10px] bg-n-blue text-center px-4 py-2 text-base font-semibold text-white transition-[filter] n-glow-hot hover:brightness-110;
   }
   .n-btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] border border-n-neon/45 px-3.5 py-2 text-[13px] font-medium text-n-text transition-colors hover:bg-n-neon/5;
+    @apply inline-flex min-h-[3rem] items-center justify-center gap-2 rounded-[10px] border border-n-neon/45 text-center px-4 py-2 text-base font-medium text-n-text transition-colors hover:bg-n-neon/5;
   }
   .n-pill {
-    @apply inline-flex items-center rounded-md border border-n-neon/45 bg-n-neon/[0.08] px-2 py-0.5 font-mono text-[10px] font-medium uppercase text-n-neon;
+    @apply inline-flex items-center rounded-md border border-n-neon/45 bg-n-neon/[0.08] px-2 py-0.5 font-mono text-2xs font-medium uppercase text-n-neon;
   }
   .n-field {
-    @apply rounded-[10px] border border-n-line bg-n-panel text-[13px] text-n-text placeholder:text-n-faint focus:border-n-neon/70 focus:outline-none;
+    @apply min-h-[3rem] rounded-[10px] border border-n-line bg-n-panel text-base text-n-text placeholder:text-n-faint focus:border-n-neon/70 focus:outline-none;
   }
   .n-chart .recharts-line-curve {
     filter: var(--glow-line);
   }
   .n-range {
-    @apply h-6 w-full cursor-pointer appearance-none bg-transparent;
+    @apply h-10 w-full cursor-pointer appearance-none bg-transparent;
   }
   .n-range::-webkit-slider-runnable-track {
-    height: 3px;
-    border-radius: 2px;
+    height: 6px;
+    border-radius: 3px;
     background: linear-gradient(to right, rgb(var(--c-accent)) var(--fill), rgb(var(--c-dim) / 0.6) var(--fill));
   }
   .n-range::-moz-range-track {
-    height: 3px;
-    border-radius: 2px;
+    height: 6px;
+    border-radius: 3px;
     background: linear-gradient(to right, rgb(var(--c-accent)) var(--fill), rgb(var(--c-dim) / 0.6) var(--fill));
   }
   .n-range::-webkit-slider-thumb {
     -webkit-appearance: none;
-    margin-top: -7.5px;
-    height: 18px;
-    width: 18px;
+    margin-top: -10px;
+    height: 26px;
+    width: 26px;
     border-radius: 9999px;
     background: rgb(var(--c-bg));
     border: 2px solid rgb(var(--c-accent));
     box-shadow: var(--glow-hot);
   }
   .n-range::-moz-range-thumb {
-    height: 14px;
-    width: 14px;
+    height: 22px;
+    width: 22px;
     border-radius: 9999px;
     background: rgb(var(--c-bg));
     border: 2px solid rgb(var(--c-accent));

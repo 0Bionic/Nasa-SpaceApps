@@ -183,9 +183,9 @@ export function TrendsPage() {
               {initials(profile.name)}
             </span>
             <div className="leading-tight">
-              <p className="flex items-center gap-1.5 text-[11px] text-n-muted">
+              <p className="flex items-center gap-1.5 text-xs text-n-muted">
                 {profile.role}
-                <span className="n-pill px-1.5 py-0 text-[9px]">Day {profile.missionDay}</span>
+                <span className="n-pill px-1.5 py-0 text-2xs">Day {profile.missionDay}</span>
               </p>
               <p className="text-sm font-medium">{profile.name}</p>
             </div>
@@ -230,14 +230,14 @@ export function TrendsPage() {
                   <li key={m.id}>
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] hover:bg-n-neon/10"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm hover:bg-n-neon/10"
                       onClick={() => {
                         setMetric(m.id);
                         setQuery('');
                       }}
                     >
                       {INDICATORS[m.id].label}
-                      <span className="font-mono text-[10px] text-n-muted">{m.glyph}</span>
+                      <span className="font-mono text-2xs text-n-muted">{m.glyph}</span>
                     </button>
                   </li>
                 ))}
@@ -246,7 +246,7 @@ export function TrendsPage() {
           </div>
           <Link
             to="/profile"
-            className="hidden h-[38px] items-center gap-2 rounded-[10px] border border-n-line bg-n-panel px-3 text-[13px] hover:border-n-neon/50 sm:flex"
+            className="hidden h-[38px] items-center gap-2 rounded-[10px] border border-n-line bg-n-panel px-3 text-sm hover:border-n-neon/50 sm:flex"
           >
             Settings <NIcon name="sliders" />
           </Link>
@@ -256,7 +256,7 @@ export function TrendsPage() {
       {critical.length > 0 && (
         <div role="alert" className="flex flex-wrap items-center gap-3 rounded-2xl border border-n-red/50 bg-n-red/10 px-4 py-3">
           <span className="h-2.5 w-2.5 rounded-full bg-n-red" aria-hidden="true" />
-          <p className="mr-auto text-[13px]">
+          <p className="mr-auto text-sm">
             <span className="font-semibold text-n-red">Critical: </span>
             {critical.map((r) => `${INDICATORS[r.indicatorId].label} ${withUnit(r.indicatorId, r.value)}`).join(' · ')}
           </p>
@@ -274,7 +274,7 @@ export function TrendsPage() {
             <span className="n-pill">{watch.length} off-nominal</span>
           </p>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 id="vitals-title" className="mr-auto font-display text-[30px] font-medium tracking-[-0.02em]">
+            <h1 id="vitals-title" className="mr-auto font-display text-[1.875rem] font-medium tracking-[-0.02em]">
               Vital Indicators
             </h1>
             <div className="flex rounded-[10px] border border-n-line bg-n-panel p-0.5" role="group" aria-label="Category">
@@ -310,11 +310,11 @@ export function TrendsPage() {
         >
           <div className="flex items-center gap-2">
             <NIcon name="download" size={18} className="text-n-neon" />
-            <span className="mr-auto font-display text-[13px] font-medium">AetherHealth</span>
-            <span className="rounded-md bg-n-red px-2 py-0.5 font-mono text-[10px] font-medium text-white">FHIR</span>
+            <span className="mr-auto font-display text-sm font-medium">AetherHealth</span>
+            <span className="rounded-md bg-n-red px-2 py-0.5 font-mono text-2xs font-medium text-white">FHIR</span>
           </div>
-          <h2 className="font-display text-[26px] font-medium tracking-[-0.02em]">{term('packetTitle')}</h2>
-          <p className="text-[13px] leading-relaxed text-n-muted">
+          <h2 className="font-display text-[1.625rem] font-medium tracking-[-0.02em]">{term('packetTitle')}</h2>
+          <p className="text-sm leading-relaxed text-n-muted">
             {term('packetBody')}
           </p>
           <div className="flex-1" />
@@ -349,7 +349,7 @@ export function TrendsPage() {
         className="n-glow space-y-4 rounded-[18px] border border-n-neon/60 bg-n-panel px-4 pb-5 pt-4 sm:px-5"
       >
         <div className="flex items-center gap-3 text-n-muted">
-          <h2 className="mr-auto text-[13px]">Indicator detail</h2>
+          <h2 className="mr-auto text-sm">Indicator detail</h2>
           <NIcon name="chart" size={17} />
           <NIcon name="clock" size={17} />
         </div>
@@ -363,12 +363,12 @@ export function TrendsPage() {
                 </p>
               )}
               <div className="flex flex-wrap items-center gap-2.5">
-                <div className="relative inline-block font-display text-[26px] font-medium tracking-[-0.02em]">
+                <div className="relative inline-block max-w-full font-display text-[1.625rem] font-medium tracking-[-0.02em]">
                   <label htmlFor="detail-metric" className="sr-only">
                     Indicator
                   </label>
                   {/* Invisible copy sizes the select to the current label, not the longest option. */}
-                  <span aria-hidden="true" className="invisible block whitespace-nowrap pr-7">
+                  <span aria-hidden="true" className="invisible block pr-7">
                     {def.label} ({def.unit})
                   </span>
                   <select
@@ -390,10 +390,10 @@ export function TrendsPage() {
               <p className="text-xs text-n-muted">{days}-day mean, all check-ins</p>
               <div className="flex flex-wrap items-center gap-3.5">
                 <p className="flex items-baseline gap-1.5 font-display">
-                  <span className="text-[56px] font-medium leading-none tracking-[-0.03em] sm:text-[64px]">
+                  <span className="text-[3.5rem] font-medium leading-none tracking-[-0.03em] sm:text-[4rem]">
                     {stats ? formatValue(metric, stats.avg) : '—'}
                   </span>
-                  <span className="text-[26px] text-n-muted">{def.unit}</span>
+                  <span className="text-[1.625rem] text-n-muted">{def.unit}</span>
                 </p>
                 <Link to="/checkin" className="n-btn">
                   <NIcon name="plus" size={14} /> Log reading
@@ -409,13 +409,13 @@ export function TrendsPage() {
               <div className="flex items-start">
                 <div className="mr-auto">
                   <h3 className="font-display text-lg font-medium">Review window</h3>
-                  <p className="text-[11px] text-n-muted">Check-ins included (days)</p>
+                  <p className="text-xs text-n-muted">Check-ins included (days)</p>
                 </div>
                 <span className="n-pill border-n-text/40 bg-n-text/5 text-n-text">{maxDays} days max</span>
               </div>
               <div className="relative pt-7">
                 <span
-                  className="absolute top-0 -translate-x-1/2 rounded-md border border-n-neon/60 bg-n-raised px-2 py-0.5 font-mono text-[10px] font-medium text-n-neon"
+                  className="absolute top-0 -translate-x-1/2 rounded-md border border-n-neon/60 bg-n-raised px-2 py-0.5 font-mono text-2xs font-medium text-n-neon"
                   style={{ left: `calc(${fill}% + ${9 - (fill / 100) * 18}px)` }}
                 >
                   {days} days
@@ -462,8 +462,8 @@ export function TrendsPage() {
                     }`}
                   >
                     <span className="mr-auto">
-                      <span className={`block text-[13px] font-medium ${on ? 'text-n-neon' : ''}`}>{t.title}</span>
-                      <span className="block text-[11px] text-n-muted">{t.sub}</span>
+                      <span className={`block text-sm font-medium ${on ? 'text-n-neon' : ''}`}>{t.title}</span>
+                      <span className="block text-xs text-n-muted">{t.sub}</span>
                     </span>
                     <NIcon name="chevron" size={14} className={on ? 'text-n-neon' : 'text-n-muted'} />
                   </button>
@@ -475,7 +475,7 @@ export function TrendsPage() {
               {detailForecast && (
                 <p
                   role="status"
-                  className={`mb-4 flex items-start gap-2 rounded-[10px] border px-3 py-2 text-[13px] ${
+                  className={`mb-4 flex items-start gap-2 rounded-[10px] border px-3 py-2 text-sm ${
                     detailForecast.kind === 'recovering' ? 'border-n-line text-n-muted' : 'border-n-amber/50 bg-n-amber/10 text-n-text'
                   }`}
                 >
@@ -504,13 +504,13 @@ export function TrendsPage() {
                       />
                       <XAxis
                         dataKey="day"
-                        tick={{ fill: C.muted, fontSize: 11 }}
+                        tick={{ fill: C.muted, fontSize: 14 }}
                         tickLine={false}
                         axisLine={{ stroke: C.line }}
                         minTickGap={24}
                       />
                       <YAxis
-                        tick={{ fill: C.muted, fontSize: 11 }}
+                        tick={{ fill: C.muted, fontSize: 14 }}
                         tickLine={false}
                         axisLine={false}
                         domain={['auto', 'auto']}
@@ -570,7 +570,7 @@ export function TrendsPage() {
                   {(['green', 'yellow', 'amber', 'red'] as const).map((sv) => {
                     const pct = (stats.counts[sv] / data.length) * 100;
                     return (
-                      <div key={sv} className="grid grid-cols-[96px_1fr_72px] items-center gap-3 text-[13px]">
+                      <div key={sv} className="grid grid-cols-[96px_1fr_72px] items-center gap-3 text-sm">
                         <span className="text-n-muted">{sv === 'green' ? 'In safe band' : SEV_SHORT[sv]}</span>
                         <span className="h-2 overflow-hidden rounded-full bg-n-raised">
                           <span
@@ -595,7 +595,7 @@ export function TrendsPage() {
               )}
 
               {tab === 'risk' && triage && (
-                <div className="grid gap-5 text-[13px] lg:grid-cols-2">
+                <div className="grid gap-5 text-sm lg:grid-cols-2">
                   <div className="space-y-3">
                     <p className="flex flex-wrap items-center gap-2 font-medium">
                       <SeverityPill severity={triage.severity} /> {triage.summary}
@@ -617,18 +617,18 @@ export function TrendsPage() {
                 <ul className="grid gap-3 md:grid-cols-2">
                   {triage.actions.map((a) => (
                     <li key={a.id} className="rounded-[14px] border border-n-line bg-n-raised p-4">
-                      <p className="flex items-center gap-2 text-[13px] font-medium">
+                      <p className="flex items-center gap-2 text-sm font-medium">
                         <span className="n-pill">Tier {a.tier}</span>
                         {a.title}
                       </p>
                       <p className="mt-1.5 text-xs leading-relaxed text-n-muted">{a.description}</p>
                     </li>
                   ))}
-                  {triage.actions.length === 0 && <li className="text-[13px] text-n-muted">No action needed. Keep routine monitoring.</li>}
+                  {triage.actions.length === 0 && <li className="text-sm text-n-muted">No action needed. Keep routine monitoring.</li>}
                 </ul>
               )}
 
-              {!latestRecord && <p className="text-[13px] text-n-muted">No check-ins yet.</p>}
+              {!latestRecord && <p className="text-sm text-n-muted">No check-ins yet.</p>}
             </div>
           </div>
 
@@ -689,11 +689,11 @@ function IndicatorCard({ s, active, onSelect }: { s: IndicatorSummary; active: b
       }`}
     >
       <span className="flex w-full items-center gap-2.5">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-n-neon/50 bg-n-neon/[0.08] font-mono text-[11px] font-medium text-n-neon">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-n-neon/50 bg-n-neon/[0.08] font-mono text-xs font-medium text-n-neon">
           {meta.glyph}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-mono text-[10px] uppercase tracking-[0.06em] text-n-muted">{CATEGORY_LABEL[meta.category]}</span>
+          <span className="block font-mono text-2xs uppercase tracking-[0.06em] text-n-muted">{CATEGORY_LABEL[meta.category]}</span>
           <span className="block truncate text-sm font-medium">{def.label}</span>
         </span>
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-n-faint group-hover:border-n-neon/60">
@@ -702,23 +702,23 @@ function IndicatorCard({ s, active, onSelect }: { s: IndicatorSummary; active: b
       </span>
       <span className="text-xs text-n-muted">Latest reading</span>
       <span className="flex items-baseline gap-1.5 font-display">
-        <span className="text-[40px] font-medium leading-none tracking-[-0.02em]">{formatValue(s.id, s.latest)}</span>
+        <span className="text-[2.5rem] font-medium leading-none tracking-[-0.02em]">{formatValue(s.id, s.latest)}</span>
         <span className="text-lg text-n-muted">{def.unit}</span>
       </span>
-      <span className={`flex items-center gap-1.5 font-mono text-[11px] ${deltaTone.text}`}>
+      <span className={`flex items-center gap-1.5 font-mono text-xs ${deltaTone.text}`}>
         <span className={`h-3.5 w-3.5 rounded-full border-[1.5px] ${deltaTone.dot}`} />
         {s.deltaPct == null ? 'No prior data' : `${s.deltaPct >= 0 ? '+' : '−'}${Math.abs(s.deltaPct).toFixed(1)}% vs 7-check-in mean`}
       </span>
       <Sparkline series={s.series} color={off ? tone.hex : NEON} />
       {s.baseline?.unusual && (
-        <span className="flex items-start gap-1.5 text-[11px] leading-snug text-n-neon">
+        <span className="flex items-start gap-1.5 text-xs leading-snug text-n-neon">
           <NIcon name="chart" size={13} className="mt-px shrink-0" />
           Unusual for you: {s.baseline.z > 0 ? 'above' : 'below'} your usual {formatValue(s.id, s.baseline.mean)} ±{' '}
           {formatValue(s.id, s.baseline.sd)} {def.unit.startsWith('/') ? '' : def.unit}
         </span>
       )}
       {s.forecast && s.forecast.kind !== 'recovering' && (
-        <span className={`flex items-start gap-1.5 text-[11px] leading-snug ${s.forecast.kind === 'leaving' ? 'text-n-amber' : tone.text}`}>
+        <span className={`flex items-start gap-1.5 text-xs leading-snug ${s.forecast.kind === 'leaving' ? 'text-n-amber' : tone.text}`}>
           <NIcon name="bolt" size={13} className="mt-px shrink-0" />
           {forecastText(s.id, s.forecast)}
         </span>
@@ -735,10 +735,10 @@ function StatTile({ label, pill, value, sub, tone }: { label: string; pill: stri
         <span className="n-pill">{pill}</span>
       </div>
       <dd className="flex items-baseline gap-2">
-        <span className={`font-display text-[30px] font-medium leading-none tracking-[-0.02em] ${tone === 'warn' ? 'text-n-amber' : ''}`}>
+        <span className={`font-display text-[1.875rem] font-medium leading-none tracking-[-0.02em] ${tone === 'warn' ? 'text-n-amber' : ''}`}>
           {value.trim()}
         </span>
-        <span className="font-mono text-[11px] text-n-muted">{sub}</span>
+        <span className="font-mono text-xs text-n-muted">{sub}</span>
       </dd>
     </div>
   );
@@ -752,7 +752,7 @@ function WhyThisColor({ metric, value }: { metric: HealthIndicatorId; value: num
   const bands = INDICATORS[metric].bands;
   return (
     <div className="space-y-3 rounded-[14px] border border-n-line p-4">
-      <p className="flex flex-wrap items-center gap-2 text-[13px] font-medium">
+      <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
         Why this color
         <span className="n-pill border-n-text/30 bg-n-text/5 text-n-muted">{BASIS_LABEL[ev.basis]}</span>
       </p>
@@ -764,7 +764,7 @@ function WhyThisColor({ metric, value }: { metric: HealthIndicatorId; value: num
         {bands.map((b, i) => (
           <li
             key={i}
-            className={`rounded-md border px-2 py-0.5 font-mono text-[10px] ${b === band ? 'border-n-neon text-n-text' : 'border-n-line text-n-muted'}`}
+            className={`rounded-md border px-2 py-0.5 font-mono text-2xs ${b === band ? 'border-n-neon text-n-text' : 'border-n-line text-n-muted'}`}
           >
             <span className={SEV_TONE[b.severity].text}>●</span> {bandRangeText(metric, b)}
           </li>
@@ -816,7 +816,7 @@ function RadiationBudgetCard({ doses, missionDay }: { doses: number[]; missionDa
           <span className="n-pill">Cumulative</span>
         </p>
         <h2 id="rad-budget" className="flex items-baseline gap-2 font-display">
-          <span className="text-[34px] font-medium leading-none tracking-[-0.02em]">{b.missionDose.toFixed(0)}</span>
+          <span className="text-[2.125rem] font-medium leading-none tracking-[-0.02em]">{b.missionDose.toFixed(0)}</span>
           <span className="text-base text-n-muted">mSv of {CAREER_RADIATION_LIMIT_MSV} mSv career limit</span>
         </h2>
         <p className="text-xs text-n-muted">
@@ -834,7 +834,7 @@ function RadiationBudgetCard({ doses, missionDay }: { doses: number[]; missionDa
         >
           <div className="h-full rounded-full" style={{ width: `${pct}%`, background: tone.hex, boxShadow: `0 0 10px ${tone.hex}` }} />
         </div>
-        <div className="flex flex-wrap justify-between gap-2 font-mono text-[11px] text-n-muted">
+        <div className="flex flex-wrap justify-between gap-2 font-mono text-xs text-n-muted">
           <span className={tone.text}>{b.pct.toFixed(1)}% used</span>
           <span>
             {Number.isFinite(b.daysToLimit)
@@ -842,7 +842,7 @@ function RadiationBudgetCard({ doses, missionDay }: { doses: number[]; missionDa
               : 'No dose logged'}
           </span>
         </div>
-        <p className="text-[11px] leading-relaxed text-n-muted">
+        <p className="text-xs leading-relaxed text-n-muted">
           Limit: NASA-STD-3001 Vol. 1 Rev. B. Long-term cancer risk tracks total dose, so this total matters more than any one day. Neutrons
           are about 30% of ISS radiation (CSA); an autonomous neutron monitor such as CSA’s CANS could feed this card.
         </p>

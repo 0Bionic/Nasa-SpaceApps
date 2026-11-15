@@ -93,7 +93,7 @@ function LiveTrace({
 
 function RefLegend({ refs }: { refs: { label: string; color: string }[] }) {
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-n-muted">
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-n-muted">
       {refs.map((r) => (
         <span key={r.label} className="inline-flex items-center gap-1.5">
           <svg width="16" height="4" aria-hidden="true">
@@ -133,7 +133,7 @@ function Readout({
       className="rounded-xl border px-3 py-2.5"
       style={{ borderColor: color ? alpha(color, 45) : 'rgb(var(--c-line))', background: color ? alpha(color, 6) : undefined }}
     >
-      <p className="flex items-center gap-1.5 text-[11px] text-n-muted">
+      <p className="flex items-center gap-1.5 text-xs text-n-muted">
         {severity && <SeverityGlyph severity={severity} size={8} />}
         {label}
       </p>
@@ -141,7 +141,7 @@ function Readout({
         {value}
         <span className="ml-1 text-xs font-normal text-n-muted">{unit}</span>
       </p>
-      {sub && <p className="text-[11px] text-n-muted">{sub}</p>}
+      {sub && <p className="text-xs text-n-muted">{sub}</p>}
     </div>
   );
 }
@@ -201,11 +201,11 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
     <section aria-labelledby="live" className="n-card space-y-4 p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NIcon name="signal" className="text-n-neon" />
-        <h2 id="live" className="text-[15px] font-medium">
+        <h2 id="live" className="text-lg font-medium">
           Live monitoring session
         </h2>
         {running ? (
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-n-red/50 bg-n-red/10 px-2 py-0.5 font-mono text-[10px] font-medium uppercase text-n-red">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-n-red/50 bg-n-red/10 px-2 py-0.5 font-mono text-2xs font-medium uppercase text-n-red">
             <span className="h-1.5 w-1.5 animate-blink rounded-full bg-n-red" /> Recording
           </span>
         ) : (
@@ -224,12 +224,12 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
             ))}
           </div>
           <p className="max-w-[70ch] text-sm text-n-muted">{info.description}</p>
-          <p className="max-w-[70ch] border-l-2 border-n-neon/50 pl-3 text-[13px]">
+          <p className="max-w-[70ch] border-l-2 border-n-neon/50 pl-3 text-sm">
             {info.basis} <Cite ids={info.sources} />
           </p>
           {mode === 'ambulatory' && (
             <div className="flex flex-wrap items-center gap-3">
-              <span className="text-[13px] text-n-muted">Playback speed (demo)</span>
+              <span className="text-sm text-n-muted">Playback speed (demo)</span>
               <div className="seg" role="group" aria-label="Playback speed">
                 {([1, 60, 600] as Speed[]).map((v) => (
                   <button key={v} type="button" className="seg-item" aria-pressed={speed === v} onClick={() => setSpeed(v)}>
@@ -237,7 +237,7 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
                   </button>
                 ))}
               </div>
-              <span className="text-[11px] text-n-muted">
+              <span className="text-xs text-n-muted">
                 {speed === 600 ? 'A full day in about 2.5 minutes' : speed === 60 ? 'A full day in 24 minutes' : 'Records for 24 hours'}
               </span>
             </div>
@@ -261,14 +261,14 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
                 <p className="font-medium" style={{ color: SEVERITY_COLOR[worstNow] }}>
                   {lastHealth.message}
                 </p>
-                <p className="text-[12px] text-n-muted">
+                <p className="text-xs text-n-muted">
                   Raised on this device in under 10 s. {delay ? `The ground would see it after ${delay.value} each way.` : ''}
                 </p>
               </div>
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             <span className="font-medium">{MODE_INFO[live.mode].label}</span>
             <span className="font-mono tabular-nums text-n-muted">{formatDuration(live.elapsedS)}</span>
             {live.mode === 'ambulatory' && (
@@ -305,12 +305,12 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
           </div>
 
           <div className="space-y-1.5">
-            <p className="text-[13px] font-medium">Heart rate</p>
+            <p className="text-sm font-medium">Heart rate</p>
             <LiveTrace samples={live.window} pick={(x) => x.hr} lo={40} hi={200} color={NEON} refs={hrRefs} label="Live heart rate trace" />
             <RefLegend refs={hrRefs} />
           </div>
           <div className="space-y-1.5">
-            <p className="text-[13px] font-medium">SpO₂</p>
+            <p className="text-sm font-medium">SpO₂</p>
             <LiveTrace
               samples={live.window}
               pick={(x) => x.spo2}
@@ -331,14 +331,14 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
               Discard
             </button>
             <span className="mx-1 hidden h-5 w-px bg-n-line sm:inline-block" />
-            <span className="text-[11px] text-n-muted">Demo events:</span>
-            <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-[12px] hover:border-n-neon/60" onClick={() => live.inject('tachy')}>
+            <span className="text-xs text-n-muted">Demo events:</span>
+            <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-xs hover:border-n-neon/60" onClick={() => live.inject('tachy')}>
               High heart rate
             </button>
-            <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-[12px] hover:border-n-neon/60" onClick={() => live.inject('desat')}>
+            <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-xs hover:border-n-neon/60" onClick={() => live.inject('desat')}>
               SpO₂ drop
             </button>
-            <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-[12px] hover:border-n-neon/60" onClick={() => live.inject('dropout')}>
+            <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-xs hover:border-n-neon/60" onClick={() => live.inject('dropout')}>
               Sensor dropout
             </button>
           </div>
@@ -348,12 +348,12 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
       )}
 
       {!running && live.lastSaved && (
-        <p className="text-[13px] text-n-muted">
+        <p className="text-sm text-n-muted">
           Saved {MODE_INFO[live.lastSaved.mode].label} session ({formatDuration(live.lastSaved.durationS)}). It is queued for the next ground packet.
         </p>
       )}
 
-      <p className="text-[11px] text-n-muted">
+      <p className="text-xs text-n-muted">
         Exertion ceiling uses age-predicted max HR (220 − age, age {ASSUMED_AGE} assumed: {HR_MAX} bpm), an app heuristic, not a NASA limit.
         At rest and during sleep the check-in resting bands apply. An alert needs several good samples in a row, so a single spike or motion
         artifact never triggers one.
@@ -363,12 +363,12 @@ function LiveSession({ onSaved }: { onSaved: () => void }) {
 }
 
 function EventLog({ events, startIso, mode }: { events: MonitorSession['events']; startIso: string | null; mode: MonitorMode }) {
-  if (events.length === 0) return <p className="text-[13px] text-n-muted">No alerts yet.</p>;
+  if (events.length === 0) return <p className="text-sm text-n-muted">No alerts yet.</p>;
   return (
     <ol className="max-h-56 space-y-1.5 overflow-y-auto pr-1" aria-label="Alert log">
       {[...events].reverse().map((e, i) => (
-        <li key={`${e.t}-${i}`} className="flex items-start gap-2.5 text-[13px]">
-          <span className="w-16 shrink-0 font-mono text-[11px] tabular-nums text-n-muted">
+        <li key={`${e.t}-${i}`} className="flex items-start gap-2.5 text-sm">
+          <span className="w-16 shrink-0 font-mono text-xs tabular-nums text-n-muted">
             {mode === 'ambulatory' ? clockFromStart(startIso, e.t) : formatDuration(e.t)}
           </span>
           <span className="mt-1">
@@ -393,7 +393,7 @@ function SessionCard({ s, onDelete }: { s: MonitorSession; onDelete: () => void 
     <li className="rounded-xl border border-n-line p-3.5">
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium">{MODE_INFO[s.mode].label}</span>
-        <span className="text-[12px] text-n-muted">
+        <span className="text-xs text-n-muted">
           {when} · {formatDuration(s.durationS)}
         </span>
         <SeverityBadge severity={s.worstSeverity} size="sm" />
@@ -401,7 +401,7 @@ function SessionCard({ s, onDelete }: { s: MonitorSession; onDelete: () => void 
           {s.downlinked ? 'Sent to ground' : 'Queued for downlink'}
         </span>
       </div>
-      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[12px] sm:grid-cols-4">
+      <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs sm:grid-cols-4">
         <span>
           <span className="text-n-muted">HR </span>
           {s.stats.hr ? `${s.stats.hr.min}–${s.stats.hr.max} bpm (avg ${Math.round(s.stats.hr.mean)})` : '--'}
@@ -420,10 +420,10 @@ function SessionCard({ s, onDelete }: { s: MonitorSession; onDelete: () => void 
         </span>
       </div>
       <div className="mt-2 flex gap-2">
-        <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-[12px] hover:border-n-neon/60" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-xs hover:border-n-neon/60" aria-expanded={open} onClick={() => setOpen(!open)}>
           {open ? 'Hide recording' : 'View recording'}
         </button>
-        <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-[12px] text-n-muted hover:border-n-red/60 hover:text-n-red" onClick={onDelete}>
+        <button type="button" className="rounded-lg border border-n-line px-2.5 py-1 text-xs text-n-muted hover:border-n-red/60 hover:text-n-red" onClick={onDelete}>
           Delete
         </button>
       </div>
@@ -445,7 +445,7 @@ function RecordedSessions({ sessions, reload }: { sessions: MonitorSession[]; re
     <section aria-labelledby="recorded" className="n-card space-y-3 p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NIcon name="upload" className="text-n-neon" />
-        <h2 id="recorded" className="text-[15px] font-medium">
+        <h2 id="recorded" className="text-lg font-medium">
           Recorded sessions
         </h2>
         <span className="n-pill">Store and forward</span>
@@ -455,13 +455,13 @@ function RecordedSessions({ sessions, reload }: { sessions: MonitorSession[]; re
           </button>
         )}
       </div>
-      <p className="max-w-[70ch] text-[13px] text-n-muted">
+      <p className="max-w-[70ch] text-sm text-n-muted">
         Sessions are kept on this device and go out with the next ground packet, then marked as sent. CSA Bio-Monitor works the same way,
         and the NASA–CSA HERA study found recording on the device lasted a full day where live streaming did not.{' '}
         <Cite ids={['csa-biomonitor', 'nasa-hera-astroskin']} />
       </p>
       {sessions.length === 0 ? (
-        <p className="text-[13px] text-n-muted">No sessions yet. Start one above.</p>
+        <p className="text-sm text-n-muted">No sessions yet. Start one above.</p>
       ) : (
         <ul className="space-y-2.5">
           {sessions.map((s) => (
@@ -493,20 +493,20 @@ function SleepCard() {
     <section aria-labelledby="sleep" className="n-card space-y-3 p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NIcon name="clock" className="text-n-neon" />
-        <h2 id="sleep" className="text-[15px] font-medium">
+        <h2 id="sleep" className="text-lg font-medium">
           Sleep
         </h2>
         <span className="n-pill">Actigraphy · continuous</span>
       </div>
       <div className="flex flex-wrap items-end gap-x-6 gap-y-2">
         <div>
-          <p className="text-[11px] text-n-muted">Last night (day {last.missionDay})</p>
+          <p className="text-xs text-n-muted">Last night (day {last.missionDay})</p>
           <p className="font-display text-3xl font-medium tabular-nums" style={{ color: SEVERITY_COLOR[sev] }}>
             {last.totalSleepH}
             <span className="ml-1 text-sm font-normal text-n-muted">h</span>
           </p>
         </div>
-        <dl className="grid grid-cols-3 gap-x-5 text-[12px]">
+        <dl className="grid grid-cols-3 gap-x-5 text-xs">
           <div>
             <dt className="text-n-muted">Asleep at</dt>
             <dd>{onset}</dd>
@@ -523,7 +523,7 @@ function SleepCard() {
       </div>
 
       <div>
-        <p className="mb-1 text-[11px] text-n-muted">Movement through the night (10-min epochs)</p>
+        <p className="mb-1 text-xs text-n-muted">Movement through the night (10-min epochs)</p>
         <div className="flex h-10 items-end gap-px" aria-hidden="true">
           {last.epochs.map((v, i) => (
             <span key={i} className="flex-1 rounded-t-sm" style={{ height: `${Math.max(6, (v / peak) * 100)}%`, background: v > 55 ? SEVERITY_COLOR.amber : alpha(NEON, 55) }} />
@@ -532,15 +532,15 @@ function SleepCard() {
       </div>
 
       <div>
-        <p className="mb-1 text-[11px] text-n-muted">Last {nights.length} nights</p>
+        <p className="mb-1 text-xs text-n-muted">Last {nights.length} nights</p>
         <div className="flex h-20 items-end gap-1.5">
           {nights.map((n) => {
             const sv = severityFor('sleep_h', n.totalSleepH);
             return (
               <div key={n.missionDay} className="flex flex-1 flex-col items-center gap-1">
-                <span className="text-[10px] tabular-nums text-n-muted">{n.totalSleepH}</span>
+                <span className="text-2xs tabular-nums text-n-muted">{n.totalSleepH}</span>
                 <span className="w-full rounded-t" style={{ height: `${(n.totalSleepH / maxH) * 56}px`, background: alpha(SEVERITY_COLOR[sv], 70) }} />
-                <span className="text-[10px] text-n-muted">D{n.missionDay}</span>
+                <span className="text-2xs text-n-muted">D{n.missionDay}</span>
               </div>
             );
           })}
@@ -548,12 +548,12 @@ function SleepCard() {
       </div>
 
       {latest && (
-        <p className="text-[12px] text-n-muted">
+        <p className="text-xs text-n-muted">
           Self-reported in today&rsquo;s check-in: <span className="text-n-text">{latest.sleepH} h</span>
           {Math.abs(latest.sleepH - last.totalSleepH) >= 1 && ' · differs from the sensor by an hour or more; worth raising at the next private medical conference.'}
         </p>
       )}
-      <p className="text-[11px] text-n-muted">
+      <p className="text-xs text-n-muted">
         NASA&rsquo;s medical standard schedules objective sleep measurement continuously through the mission, with data discussed at the weekly
         private medical conference. Bands: 7 h or more (AASM). Simulated wrist sensor. <Cite ids={['ochmo-100']} />
       </p>
@@ -592,7 +592,7 @@ function DoseCard() {
     <section aria-labelledby="dose" className="n-card space-y-3 p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NIcon name="bolt" className="text-n-neon" />
-        <h2 id="dose" className="text-[15px] font-medium">
+        <h2 id="dose" className="text-lg font-medium">
           Radiation dosimeter
         </h2>
         <span className="n-pill">Personal dosimetry · continuous</span>
@@ -601,16 +601,16 @@ function DoseCard() {
         <Readout label="Dose rate now" value={(rate * wobble).toFixed(1)} unit="µSv/h" severity={sev} />
         <Readout label="Since midnight" value={today.toFixed(3)} unit="mSv" sub={`Projected ${perDay.toFixed(2)} mSv today`} />
       </div>
-      <p className="text-[12px] text-n-muted">
+      <p className="text-xs text-n-muted">
         Rate from {basis}. NASA habitat design limit here: <span className="text-n-text">{mission.designLimit}</span>.
       </p>
       {sw?.alert && (
-        <p role="status" className="rounded-lg border border-n-amber/50 bg-n-amber/10 px-3 py-2 text-[12px] text-n-amber">
+        <p role="status" className="rounded-lg border border-n-amber/50 bg-n-amber/10 px-3 py-2 text-xs text-n-amber">
           {sw.alert === 'sep' ? 'Solar particle event in the last 3 days' : 'X-class flare in the last 3 days'} (NASA DONKI): watch this
           dosimeter and be ready to shelter.
         </p>
       )}
-      <p className="text-[11px] text-n-muted">
+      <p className="text-xs text-n-muted">
         NASA requires radiation to be monitored throughout the mission with crew personal dosimetry. Simulated dosimeter.{' '}
         <Cite ids={['ochmo-100', 'csa-radiation']} />
       </p>
@@ -705,8 +705,8 @@ export function MonitorPage() {
           {WHY.map((w) => (
             <div key={w.title} className="rounded-2xl border border-n-line p-4">
               <h3 className="text-sm font-semibold">{w.title}</h3>
-              <p className="mt-1.5 text-[13px] text-n-muted">{w.body}</p>
-              <p className="mt-2 text-[11px]">
+              <p className="mt-1.5 text-sm text-n-muted">{w.body}</p>
+              <p className="mt-2 text-xs">
                 <Cite ids={w.ids} />
               </p>
             </div>

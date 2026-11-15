@@ -10,6 +10,7 @@ import { SeverityBadge } from '@/components/SeverityBadge';
 import { downloadGroundPacket } from '@/data/exportPacket';
 import { SEVERITY_RANK } from '@/features/trends/neon';
 import { useTerm } from '@/app/audience';
+import { useTextSize } from '@/app/textSize';
 
 const RECHECK_SECONDS = 5 * 60;
 
@@ -35,6 +36,14 @@ export function ProtocolPage() {
   const latest = useAppStore((s) => s.latest);
   const profile = useAppStore((s) => s.profile);
   const term = useTerm();
+  const setTemporaryLarge = useTextSize((s) => s.setTemporary);
+
+  // The guided protocol is used when someone is unwell: show it in large text,
+  // without changing the saved choice for the rest of the app.
+  useEffect(() => {
+    setTemporaryLarge(true);
+    return () => setTemporaryLarge(false);
+  }, [setTemporaryLarge]);
 
   const target: TriageResult | null = useMemo(() => {
     if (!latest) return null;

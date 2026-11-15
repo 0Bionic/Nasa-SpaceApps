@@ -54,7 +54,7 @@ export function GuidancePage() {
                     {tier}
                   </span>
                   <div>
-                    <h3 className="text-[0.9375rem] font-semibold text-star">{name}</h3>
+                    <h3 className="text-lg font-semibold text-star">{name}</h3>
                     <p className="mt-0.5 text-xs leading-snug text-dust">{when}</p>
                   </div>
                 </div>
@@ -93,7 +93,7 @@ export function GuidancePage() {
                   onClick={() => setOpenId(open ? null : ind.id)}
                   className="flex w-full items-center justify-between gap-3 py-3.5 text-left"
                 >
-                  <span className="text-[0.9375rem] font-medium text-star">
+                  <span className="text-lg font-medium text-star">
                     {ind.label}
                     <span className="ml-2 text-xs font-normal text-faint">{ind.unit}</span>
                   </span>

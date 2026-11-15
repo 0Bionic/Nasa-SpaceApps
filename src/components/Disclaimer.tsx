@@ -2,7 +2,7 @@
 export function MedicalDisclaimer({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <p className="text-[0.6875rem] leading-snug text-faint">
+      <p className="text-xs leading-snug text-faint">
         Not a diagnosis. Escalate amber/red readings or worsening symptoms to CMO / flight surgeon.
       </p>
     );

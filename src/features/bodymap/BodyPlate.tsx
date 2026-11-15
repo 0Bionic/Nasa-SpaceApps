@@ -246,7 +246,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                       x={tx}
                       y={node[1] - 5}
                       textAnchor={anchor}
-                      className="fill-star text-[13px] font-semibold"
+                      className="fill-star text-sm font-semibold"
                     >
                       {region.label}
                     </text>
@@ -254,7 +254,7 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
                       x={tx}
                       y={node[1] + 14}
                       textAnchor={anchor}
-                      className="text-[12px]"
+                      className="text-xs"
                       fill={reading.severity === 'green' ? 'rgb(var(--c-muted))' : color}
                     >
                       {reading.detail}

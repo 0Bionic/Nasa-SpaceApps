@@ -255,13 +255,14 @@ export function CheckInPage() {
             return (
               <div
                 key={region.id}
-                className="rounded-lg border border-rule bg-hull px-3 py-3 sm:grid sm:grid-cols-[140px_1fr_1fr] sm:items-center sm:gap-3"
+                className="rounded-lg border border-rule bg-hull px-3 py-3 sm:grid sm:grid-cols-[10rem_1fr_1fr] sm:items-center sm:gap-4"
               >
-                <p className="text-sm font-semibold text-star">{region.shortLabel}</p>
-                <label className="mt-2 block text-xs text-dust sm:mt-0">
+                <p className="text-base font-semibold text-star">{region.shortLabel}</p>
+                <label className="mt-2 block text-sm text-dust sm:mt-0">
                   Level {level}
                   <input
-                    className="mt-1 w-full accent-limb-deep"
+                    className="n-range mt-1"
+                    style={{ '--fill': `${level * 10}%` } as React.CSSProperties}
                     type="range"
                     min={0}
                     max={10}
@@ -272,7 +273,7 @@ export function CheckInPage() {
                   />
                 </label>
                 <input
-                  className="field mt-2 text-sm sm:mt-0"
+                  className="field mt-2 sm:mt-0"
                   placeholder="Note (optional)"
                   value={entry?.note ?? ''}
                   onChange={(e) => setDiscomfort(region.id, level, e.target.value)}
@@ -304,16 +305,16 @@ export function CheckInPage() {
                   }
                 />
                 <span
-                  className={`mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-limb ${
+                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-limb ${
                     on ? 'border-sev-amber bg-sev-amber text-void' : 'border-rule-strong'
                   }`}
                   aria-hidden="true"
                 >
-                  {on && <IconCheck width={14} height={14} strokeWidth={2.2} />}
+                  {on && <IconCheck width={18} height={18} strokeWidth={2.2} />}
                 </span>
                 <span>
-                  <span className="block text-sm font-semibold text-star">{label}</span>
-                  <span className="block text-xs text-dust">{hint}</span>
+                  <span className="block text-base font-semibold text-star">{label}</span>
+                  <span className="block text-sm text-dust">{hint}</span>
                 </span>
               </label>
             );
@@ -397,12 +398,12 @@ function InstrumentRow({
   const [min, max] = LIMITS[id];
 
   return (
-    <div className="grid gap-x-6 gap-y-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_132px_minmax(0,1.1fr)] sm:items-center">
+    <div className="grid gap-x-6 gap-y-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_10rem_minmax(0,1.1fr)] sm:items-center">
       <div>
-        <label htmlFor={inputId} className="text-sm font-semibold text-star">
+        <label htmlFor={inputId} className="text-base font-semibold text-star">
           {def.label}
         </label>
-        <p id={hintId} className="mt-0.5 text-xs leading-snug text-faint">
+        <p id={hintId} className="mt-1 text-sm leading-snug text-faint">
           {def.howToMeasure}
         </p>
       </div>
@@ -411,7 +412,7 @@ function InstrumentRow({
         <input
           id={inputId}
           aria-describedby={hintId}
-          className="field readout pr-14 text-right text-lg"
+          className="field readout min-h-[3.5rem] pr-16 text-right text-2xl"
           type="number"
           inputMode="decimal"
           step={STEP[id] ?? 1}
@@ -422,7 +423,7 @@ function InstrumentRow({
           required
           style={{ color: sev === 'green' ? undefined : SEVERITY_COLOR[sev] }}
         />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-faint">
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-faint">
           {def.unit}
         </span>
       </div>
@@ -430,7 +431,7 @@ function InstrumentRow({
       <div>
         <BandScale id={id} value={valid ? value : null} severity={sev} height={6} />
         <p
-          className="mt-1 flex items-center gap-1.5 text-xs"
+          className="mt-1.5 flex items-center gap-1.5 text-sm font-medium"
           style={{ color: sev === 'green' ? 'rgb(var(--c-muted))' : SEVERITY_COLOR[sev] }}
         >
           <SeverityGlyph severity={sev} size={8} />

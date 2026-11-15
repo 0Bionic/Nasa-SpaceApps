@@ -26,18 +26,18 @@ export function SpaceWeatherCard() {
     <section aria-labelledby="space-weather" className="n-card space-y-3 p-5">
       <div className="flex flex-wrap items-center gap-2">
         <NIcon name="signal" className="text-n-neon" />
-        <h2 id="space-weather" className="text-[15px] font-medium">
+        <h2 id="space-weather" className="text-lg font-medium">
           Space weather
         </h2>
         <span className="n-pill">NASA DONKI · live</span>
-        <span className="ml-auto text-[11px] text-n-muted">
+        <span className="ml-auto text-xs text-n-muted">
           {data ? `Last synced ${ago(data.syncedAt)}` : status === 'loading' ? 'Syncing…' : 'Not synced yet'}
         </span>
         <button
           type="button"
           onClick={() => void refresh(true)}
           disabled={status === 'loading'}
-          className="rounded-lg border border-n-line px-2.5 py-1 text-[11px] hover:border-n-neon/60 disabled:opacity-50"
+          className="rounded-lg border border-n-line px-2.5 py-1 text-xs hover:border-n-neon/60 disabled:opacity-50"
         >
           {status === 'loading' ? 'Syncing…' : 'Sync now'}
         </button>
@@ -46,7 +46,7 @@ export function SpaceWeatherCard() {
       {s ? (
         <>
           {s.alert && (
-            <p role="status" className="rounded-[10px] border border-n-amber/50 bg-n-amber/10 px-3 py-2 text-[13px]">
+            <p role="status" className="rounded-[10px] border border-n-amber/50 bg-n-amber/10 px-3 py-2 text-sm">
               <span className="font-medium">
                 {s.alert === 'sep' ? 'Solar energetic particle event in the last 3 days. ' : 'X-class flare in the last 3 days. '}
               </span>
@@ -55,18 +55,18 @@ export function SpaceWeatherCard() {
           )}
           <dl className="grid gap-3 sm:grid-cols-3">
             <div>
-              <dt className="text-[11px] text-n-muted">Solar flares, last {data!.rangeDays} days</dt>
+              <dt className="text-xs text-n-muted">Solar flares, last {data!.rangeDays} days</dt>
               <dd className="font-display text-2xl font-medium">{s.flareCount}</dd>
             </div>
             <div>
-              <dt className="text-[11px] text-n-muted">Strongest flare</dt>
+              <dt className="text-xs text-n-muted">Strongest flare</dt>
               <dd className="font-display text-2xl font-medium">
                 {s.strongest ? s.strongest.classType : '—'}
                 {s.strongest && <span className="ml-2 text-xs font-normal text-n-muted">{day(s.strongest.peakTime)}</span>}
               </dd>
             </div>
             <div>
-              <dt className="text-[11px] text-n-muted">Particle events (SEP)</dt>
+              <dt className="text-xs text-n-muted">Particle events (SEP)</dt>
               <dd className="font-display text-2xl font-medium">
                 {s.sepCount}
                 {s.latestSep && <span className="ml-2 text-xs font-normal text-n-muted">latest {day(s.latestSep.eventTime)}</span>}
@@ -75,13 +75,13 @@ export function SpaceWeatherCard() {
           </dl>
         </>
       ) : (
-        <p className="text-[13px] text-n-muted">
+        <p className="text-sm text-n-muted">
           {status === 'loading' ? 'Contacting NASA DONKI…' : 'Connect once to download the latest solar flares and particle events; they stay available offline.'}
         </p>
       )}
 
-      {status === 'error' && <p className="text-[11px] text-n-muted">{error}</p>}
-      <p className="text-[11px] leading-relaxed text-n-muted">
+      {status === 'error' && <p className="text-xs text-n-muted">{error}</p>}
+      <p className="text-xs leading-relaxed text-n-muted">
         Solar particle events can raise crew dose sharply (NASA limit: 250 mSv per event); flares often come first. Source: NASA
         CCMC DONKI via api.nasa.gov. Space weather is measured near Earth and in the heliosphere, so treat it as an early warning,
         not your habitat&rsquo;s dose.

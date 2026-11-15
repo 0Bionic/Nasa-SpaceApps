@@ -55,8 +55,20 @@ export default {
         ui: ['Public Sans', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
+      // Crew-readable type scale, in rem so "Large text" mode scales everything.
+      // NASA-STD-3001 Vol. 2 Appendix F: character height at least 0.25 deg (0.4 deg preferred).
+      // With the CSS reference pixel, 16px text is about the 0.25 deg minimum, so 16px is the
+      // smallest size for anything the crew must read; 2xs (14px) is for uppercase tags and
+      // chart ticks only.
       fontSize: {
-        '2xs': ['0.6875rem', { lineHeight: '1rem' }],
+        '2xs': ['0.875rem', { lineHeight: '1.25rem' }],
+        xs: ['1rem', { lineHeight: '1.45rem' }],
+        sm: ['1.0625rem', { lineHeight: '1.6rem' }],
+        base: ['1.125rem', { lineHeight: '1.7rem' }],
+        lg: ['1.25rem', { lineHeight: '1.8rem' }],
+        xl: ['1.4375rem', { lineHeight: '2rem' }],
+        '2xl': ['1.75rem', { lineHeight: '2.25rem' }],
+        '3xl': ['2.125rem', { lineHeight: '2.5rem' }],
       },
       keyframes: {
         blink: { '0%, 49%': { opacity: '1' }, '50%, 100%': { opacity: '0.25' } },
