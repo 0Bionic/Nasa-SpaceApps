@@ -5,6 +5,7 @@ import { INDICATORS, INDICATOR_LIST } from '@/domain/indicators';
 import { SEVERITY_RANK, type Severity } from '@/domain/types';
 import { useAppStore } from '@/store/useAppStore';
 import { BodyPlate } from '@/features/bodymap/BodyPlate';
+import { SUIT_LABEL, useSuit, type SuitStyle } from '@/features/bodymap/AstronautFigure';
 import { RegionDetail } from '@/features/bodymap/RegionDetail';
 import { AlertCard } from '@/components/AlertCard';
 import { SeverityGlyph } from '@/components/SeverityBadge';
@@ -178,11 +179,16 @@ export function DashboardPage() {
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)]">
         <section className="surface relative p-4 sm:p-5" aria-labelledby="plate-title">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 id="plate-title" className="text-sm font-semibold text-star">
-              Body status
-            </h2>
-            {when && <p className="text-xs text-faint">From the check-in on {when}</p>}
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 id="plate-title" className="h-section">
+                {profile ? `${profile.name}` : 'Body status'}
+              </h2>
+              <p className="text-xs text-faint">
+                Body status{when ? ` · from the check-in on ${when}` : ''}
+              </p>
+            </div>
+            <SuitPicker />
           </div>
           <div className="mx-auto mt-2 max-w-[640px]">
             <BodyPlate checkIn={latest} selected={selected} onSelect={setSelected} />
@@ -266,6 +272,32 @@ export function DashboardPage() {
       )}
 
       <MedicalDisclaimer />
+    </div>
+  );
+}
+
+/** Pick a suit colour; saved on this device. */
+function SuitPicker() {
+  const suit = useSuit((s) => s.suit);
+  const setSuit = useSuit((s) => s.setSuit);
+  const swatch: Record<SuitStyle, string> = { white: '#F4F6FA', orange: '#EF7A26', blue: '#2A5FB8' };
+  return (
+    <div className="flex items-center gap-1.5" role="group" aria-label="Suit colour">
+      {(Object.keys(SUIT_LABEL) as SuitStyle[]).map((k) => (
+        <button
+          key={k}
+          type="button"
+          onClick={() => setSuit(k)}
+          aria-pressed={suit === k}
+          aria-label={SUIT_LABEL[k]}
+          title={SUIT_LABEL[k]}
+          className={`flex h-11 w-11 items-center justify-center rounded-full border-2 transition-colors ${
+            suit === k ? 'border-limb' : 'border-transparent hover:border-rule-strong'
+          }`}
+        >
+          <span className="h-7 w-7 rounded-full border border-rule-strong" style={{ background: swatch[k] }} />
+        </button>
+      ))}
     </div>
   );
 }

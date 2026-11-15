@@ -11,59 +11,8 @@ import {
 } from '@/domain/types';
 import { SeverityGlyph } from '@/components/SeverityBadge';
 import { SEVERITY_COLOR, SEVERITY_LABEL, withUnit } from '@/components/vitals';
-
-const CX = 300;
-
-/* Right half of the body contour as (dx from centre, y). Mirrored for the left. */
-const RIGHT: [number, number][] = [
-  [11, 86], [13, 100], [38, 108], [58, 115], [68, 128], [74, 160], [80, 200], [86, 228],
-  [91, 264], [95, 298], [100, 314], [99, 334], [92, 346], [85, 338], [83, 318], [80, 300],
-  [74, 264], [68, 226], [61, 186], [55, 152], [50, 172], [44, 205], [41, 232], [46, 258],
-  [50, 288], [47, 324], [41, 366], [37, 392], [35, 424], [32, 460], [36, 474], [44, 486],
-  [30, 491], [17, 488], [16, 470], [15, 430], [16, 392], [14, 352], [9, 314], [3, 300],
-];
-
-function catmullRom(points: [number, number][]): string {
-  const p = points;
-  const n = p.length;
-  let d = `M${p[0][0]},${p[0][1]}`;
-  for (let i = 0; i < n; i++) {
-    const p0 = p[(i - 1 + n) % n];
-    const p1 = p[i];
-    const p2 = p[(i + 1) % n];
-    const p3 = p[(i + 2) % n];
-    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
-    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
-    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
-    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
-    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
-  }
-  return d + 'Z';
-}
-
-const BODY_PATH = (() => {
-  const right = RIGHT.map(([dx, y]) => [CX + dx, y] as [number, number]);
-  const left = [...RIGHT].reverse().map(([dx, y]) => [CX - dx, y] as [number, number]);
-  return catmullRom([...right, ...left]);
-})();
-
-const DETAIL_PATHS = [
-  // clavicles
-  `M${CX - 44},113 Q${CX - 20},104 ${CX},110 Q${CX + 20},104 ${CX + 44},113`,
-  // sternum
-  `M${CX},110 L${CX},192`,
-  // rib arcs
-  ...[140, 160, 180].map((y) => `M${CX - 36},${y + 10} Q${CX},${y - 12} ${CX + 36},${y + 10}`),
-  // inguinal lines
-  `M${CX - 42},262 Q${CX - 20},282 ${CX - 4},298`,
-  `M${CX + 42},262 Q${CX + 20},282 ${CX + 4},298`,
-  // knees
-  `M${CX - 34},368 Q${CX - 27},378 ${CX - 20},368`,
-  `M${CX + 20},368 Q${CX + 27},378 ${CX + 34},368`,
-  // elbows
-  `M${CX - 86},226 q6,4 12,0`,
-  `M${CX + 74},226 q6,4 12,0`,
-];
+import { useAppStore } from '@/store/useAppStore';
+import { AstronautFigure, CX } from './AstronautFigure';
 
 interface Anchor {
   node: [number, number];
@@ -71,12 +20,12 @@ interface Anchor {
 }
 
 const ANCHORS: Record<BodyRegionId, Anchor> = {
-  behavioral: { node: [CX, 42], side: 'left' },
-  head_eyes: { node: [CX + 10, 63], side: 'right' },
-  resp: { node: [CX - 20, 152], side: 'left' },
-  cardio: { node: [CX + 15, 162], side: 'right' },
-  skin_immune: { node: [CX + 83, 262], side: 'right' },
-  msk: { node: [CX - 27, 372], side: 'left' },
+  behavioral: { node: [CX - 8, 44], side: 'left' },
+  head_eyes: { node: [CX + 12, 70], side: 'right' },
+  resp: { node: [CX - 26, 168], side: 'left' },
+  cardio: { node: [CX + 26, 168], side: 'right' },
+  skin_immune: { node: [CX + 92, 262], side: 'right' },
+  msk: { node: [CX - 30, 384], side: 'left' },
 };
 
 const COMPACT_NAME: Record<BodyRegionId, string> = {
@@ -154,6 +103,7 @@ interface Props {
 export function BodyPlate({ checkIn, selected, onSelect }: Props) {
   const readings = useMemo(() => regionReadings(checkIn), [checkIn]);
   const compact = useIsCompact();
+  const profile = useAppStore((s) => s.profile);
   const viewBox = compact ? `${CX - 125} 10 250 495` : '0 0 600 510';
 
   const keyActivate = (id: BodyRegionId) => (e: React.KeyboardEvent) => {
@@ -169,36 +119,15 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
         viewBox={viewBox}
         className={compact ? 'mx-auto block h-[400px] w-full' : 'block h-auto w-full'}
         role="group"
-        aria-label="Body status map. Select a region to see its readings."
+        aria-label={`${profile?.name ?? 'Crew member'}: body status map. Select a region to see its readings.`}
       >
-        {/* centre axis */}
-        <line
-          x1={CX} y1={14} x2={CX} y2={500}
-          stroke="rgb(var(--c-line))" strokeDasharray="2 5"
+        {/* the crew member's suit */}
+        <AstronautFigure
+          name={profile?.name ?? ''}
+          environment={profile?.environment ?? 'station'}
+          missionDay={profile?.missionDay ?? 0}
+          overall={checkIn?.overallSeverity ?? null}
         />
-
-        {/* figure */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          <path
-            d={BODY_PATH}
-            stroke="rgb(var(--c-muted))"
-            strokeWidth={1.4}
-            fill="rgb(var(--c-bg))"
-            fillOpacity={0.7}
-          />
-          <ellipse
-            cx={CX} cy={58} rx={21} ry={26}
-            stroke="rgb(var(--c-muted))"
-            strokeWidth={1.4}
-            fill="rgb(var(--c-bg))"
-          />
-          <g stroke="rgb(var(--c-faint))" strokeWidth={1}>
-            {DETAIL_PATHS.map((d) => (
-              <path key={d} d={d} />
-            ))}
-            <circle cx={CX} cy={234} r={1.6} />
-          </g>
-        </g>
 
         {/* regions */}
         {ORDER.map((id) => {
@@ -265,10 +194,11 @@ export function BodyPlate({ checkIn, selected, onSelect }: Props) {
 
               <circle cx={node[0]} cy={node[1]} r={18} fill="transparent" />
               <g>
+                <circle cx={node[0]} cy={node[1]} r={isSel ? 13 : 11} fill="rgb(var(--c-bg))" />
                 <circle
                   cx={node[0]} cy={node[1]} r={isSel ? 10 : 8}
-                  fill="rgb(var(--c-bg))" fillOpacity={0.85}
-                  stroke={color} strokeWidth={isSel ? 2 : 1.25}
+                  fill="rgb(var(--c-bg))"
+                  stroke={color} strokeWidth={isSel ? 2.5 : 2}
                 />
                 <circle cx={node[0]} cy={node[1]} r={isSel ? 4.5 : 3.5} fill={color} />
                 <circle

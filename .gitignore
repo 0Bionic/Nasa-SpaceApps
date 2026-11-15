@@ -12,3 +12,5 @@ devtools-*.log
 *.tsbuildinfo
 dist-artifact
 !.env.artifact
+.vercel
+.env*
