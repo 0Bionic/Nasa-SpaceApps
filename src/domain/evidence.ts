@@ -18,7 +18,12 @@ export type SourceId =
   | 'aasm-sleep'
   | 'acc-aha-bp'
   | 'ada-glucose'
-  | 'who-oximetry';
+  | 'who-oximetry'
+  | 'ochmo-co2'
+  | 'std-3001-v2'
+  | 'ochmo-radiation'
+  | 'ochmo-standards'
+  | 'nasa-donki';
 
 export interface Source {
   id: SourceId;
@@ -65,6 +70,40 @@ export const SOURCES: Record<SourceId, Source> = {
     title: 'Monitoring radiation for astronaut health (2026)',
     url: 'https://www.asc-csa.gc.ca/eng/news/articles/2026/2026-02-26-monitoring-radiation-astronaut-health.asp',
     note: 'Continuous, autonomous dose monitoring (CANS); neutrons are about 30% of total radiation on the ISS.',
+  },
+  'std-3001-v2': {
+    id: 'std-3001-v2',
+    org: 'NASA',
+    title: 'NASA-STD-3001 Vol. 2, requirement V2 6004 (CO₂)',
+    note: 'Average 1-hour CO₂ partial pressure in the habitable volume no more than 3 mmHg.',
+  },
+  'ochmo-co2': {
+    id: 'ochmo-co2',
+    org: 'NASA Office of the Chief Health & Medical Officer',
+    title: 'OCHMO-TB-004 Carbon Dioxide technical brief',
+    url: 'https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf',
+    note: '7-day average below 2.5 mmHg keeps ISS headache risk under 1%; headache, fatigue and malaise reported at 2.8–4.5 mmHg.',
+  },
+  'ochmo-radiation': {
+    id: 'ochmo-radiation',
+    org: 'NASA Office of the Chief Health & Medical Officer',
+    title: 'Radiation Protection technical brief',
+    url: 'https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf',
+    note: 'Career effective dose limit 600 mSv; 250 mSv limit per solar particle event.',
+  },
+  'ochmo-standards': {
+    id: 'ochmo-standards',
+    org: 'NASA Office of the Chief Health & Medical Officer',
+    title: 'OCHMO standards overview (2021)',
+    url: 'https://www.nasa.gov/sites/default/files/atoms/files/ochmo_standards_overview_sept_15_2021_francisco.pdf',
+    note: 'Beyond LEO, habitats keep galactic cosmic-ray dose below 1.3 mSv/day in free space and 0.8 mSv/day on planetary surfaces.',
+  },
+  'nasa-donki': {
+    id: 'nasa-donki',
+    org: 'NASA Goddard CCMC, via api.nasa.gov',
+    title: 'DONKI space weather database (solar flares, SEP events)',
+    url: 'https://kauai.ccmc.gsfc.nasa.gov/DONKI/',
+    note: 'Live solar flares and solar energetic particle events, fetched when online and cached for offline use.',
   },
   'nasa-std-3001': {
     id: 'nasa-std-3001',
@@ -113,9 +152,10 @@ export const SOURCES: Record<SourceId, Source> = {
 export const SOURCE_LIST = Object.values(SOURCES);
 
 /** How strong the threshold is, so judges and crews can see what is evidence vs. design choice. */
-export type BasisKind = 'clinical' | 'spaceflight' | 'heuristic';
+export type BasisKind = 'nasa-standard' | 'clinical' | 'spaceflight' | 'heuristic';
 
 export const BASIS_LABEL: Record<BasisKind, string> = {
+  'nasa-standard': 'NASA standard',
   clinical: 'Clinical guideline',
   spaceflight: 'Spaceflight data',
   heuristic: 'App heuristic',
@@ -212,11 +252,11 @@ export const EVIDENCE: Record<HealthIndicatorId, IndicatorEvidence> = {
     sources: ['nasa-risks'],
   },
   radiation_msv: {
-    basis: 'spaceflight',
+    basis: 'nasa-standard',
     rationale:
-      'Measured routine background is ≈1.37 mSv/day on the Moon and ≈1.84 mSv/day in deep space, so up to 2 mSv/day is green. Higher daily readings suggest a solar particle event (shelter at red). Long-term risk is cumulative, so the mission total is tracked against NASA’s 600 mSv career limit.',
+      'Green ends at 0.8 mSv/day and yellow at 1.3 mSv/day, NASA’s design limits for cosmic-ray dose inside habitats on planetary surfaces and in free space. Unshielded background is higher (≈1.37 mSv/day on the Moon, ≈1.84 in deep space). Bands above 1.3 are illustrative; red suggests a solar particle event (250 mSv limit per event). Long-term risk is cumulative, so the mission total is tracked against the 600 mSv career limit.',
     risks: ['Risk of Radiation-Induced Cancers'],
-    sources: ['change4-lnd', 'msl-rad', 'nasa-std-3001', 'csa-radiation', 'nasa-risks'],
+    sources: ['ochmo-standards', 'ochmo-radiation', 'nasa-std-3001', 'nasa-donki', 'change4-lnd', 'msl-rad', 'csa-radiation', 'nasa-risks'],
   },
   teamwork: {
     basis: 'heuristic',
@@ -243,10 +283,11 @@ export const EVIDENCE: Record<HealthIndicatorId, IndicatorEvidence> = {
     sources: ['nasa-risks'],
   },
   cabin_co2: {
-    basis: 'heuristic',
-    rationale: 'Elevated cabin CO₂ is part of NASA’s hostile/closed-environment hazard. These cut-offs are app choices and must be checked against the NASA-STD-3001 Vol. 2 CO₂ limits before operational use.',
+    basis: 'nasa-standard',
+    rationale:
+      'Green ends at 2.5 mmHg (3,290 ppm), the 7-day level NASA’s CO₂ brief gives for under 1% headache risk; yellow ends at the NASA-STD-3001 limit of 3 mmHg (3,950 ppm, 1-hour average); amber covers 3–4.5 mmHg, where headache, fatigue and malaise are reported; red is above 4.5 mmHg. ppm assumes a 1-atmosphere cabin; NASA writes the limit in mmHg because habitats may run at lower pressure.',
     risks: [],
-    sources: ['nasa-hazards'],
+    sources: ['std-3001-v2', 'ochmo-co2', 'nasa-hazards'],
   },
 };
 

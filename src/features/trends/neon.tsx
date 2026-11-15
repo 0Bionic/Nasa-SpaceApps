@@ -80,6 +80,8 @@ export interface IndicatorSummary {
   series: number[];
   /** Early-warning trend from the last 7 check-ins. */
   forecast: Forecast | null;
+  /** Personal baseline from the 14 check-ins before the latest; flags readings unusual for this astronaut. */
+  baseline: { mean: number; sd: number; z: number; unusual: boolean } | null;
 }
 
 /** history is newest-first, as stored. */
@@ -97,6 +99,10 @@ export function summarize(history: CheckInRecord[], id: HealthIndicatorId): Indi
       .slice(0, 12)
       .reverse()
       .map((c) => valueOf(c, id)),
+    baseline: personalBaseline(
+      latest,
+      history.slice(1, 15).map((c) => valueOf(c, id)),
+    ),
     forecast: forecast(
       id,
       history
@@ -105,6 +111,20 @@ export function summarize(history: CheckInRecord[], id: HealthIndicatorId): Indi
         .map((c) => valueOf(c, id)),
     ),
   };
+}
+
+/**
+ * Compare today's reading with this astronaut's own recent history, not just fixed bands:
+ * a reading 2+ standard deviations from their 14-check-in average is "unusual for you",
+ * even when it is still inside the nominal range.
+ */
+export function personalBaseline(latest: number, prior: number[]) {
+  if (prior.length < 7) return null;
+  const mean = prior.reduce((a, b) => a + b, 0) / prior.length;
+  const sd = Math.sqrt(prior.reduce((a, b) => a + (b - mean) ** 2, 0) / (prior.length - 1));
+  if (!(sd > 0)) return null;
+  const z = (latest - mean) / sd;
+  return { mean, sd, z, unusual: Math.abs(z) >= 2 };
 }
 
 export function unitLabel(id: HealthIndicatorId): string {

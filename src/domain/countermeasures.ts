@@ -89,7 +89,7 @@ const ACTIONS: Record<string, CountermeasureAction> = {
     id: 'ground_packet',
     tier: 3,
     title: 'Queue ground surgeon packet',
-    description: 'Export encrypted vitals bundle for uplink to flight surgeons at the next comm window.',
+    description: 'Package recent vitals and notes for uplink to flight surgeons at the next comm window.',
     category: 'escalate',
   },
   emergency_protocol: {
@@ -157,7 +157,7 @@ const BY_INDICATOR: Record<HealthIndicatorId, Partial<Record<Severity, string[]>
   spo2: {
     yellow: ['o2_cabin', 'recheck_vitals'],
     amber: ['o2_cabin', 'cmo_exam', 'recheck_vitals'],
-    red: ['emergency_protocol', 'o2_cabin', 'ground_packet'],
+    red: ['recheck_vitals', 'o2_cabin', 'cmo_exam', 'emergency_protocol', 'ground_packet'],
   },
   temp: {
     yellow: ['recheck_vitals', 'hydrate'],
@@ -228,8 +228,13 @@ const BY_INDICATOR: Record<HealthIndicatorId, Partial<Record<Severity, string[]>
 
 export function actionsFor(indicatorId: HealthIndicatorId, severity: Severity): CountermeasureAction[] {
   if (severity === 'green') return [];
-  const ids = BY_INDICATOR[indicatorId][severity] ?? ['recheck_vitals', 'cmo_exam'];
-  return ids.map((id) => ACTIONS[id]);
+  const ids = [...(BY_INDICATOR[indicatorId][severity] ?? ['recheck_vitals', 'cmo_exam'])];
+  // A critical reading always walks the full ladder: self-care, CMO review, then ground.
+  if (severity === 'red') {
+    if (!ids.includes('cmo_exam')) ids.push('cmo_exam');
+    if (!ids.includes('ground_packet')) ids.push('ground_packet');
+  }
+  return ids.map((id) => ACTIONS[id]).sort((a, b) => a.tier - b.tier);
 }
 
 export const GUIDANCE_LIBRARY: CountermeasureAction[] = [

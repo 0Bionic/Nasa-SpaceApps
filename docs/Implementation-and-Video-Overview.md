@@ -8,7 +8,7 @@
 
 ## 1. What we built (one paragraph)
 
-AetherHealth is an **offline-first Progressive Web App** that lets astronauts log health indicators (vitals, sleep, mood, exercise), see status on an **interactive 3D body map**, understand **why** a result matters in the context of NASA’s five spaceflight hazards, and get **tiered next actions** (self-care → crew medical officer → ground packet). Seeded demo data makes a critical SpO₂ case visible immediately for demos and video.
+AetherHealth is an **offline-first Progressive Web App** that lets astronauts log health indicators (vitals, sleep, mood, exercise), see status on an **interactive SVG body map**, understand **why** a result matters in the context of NASA’s five spaceflight hazards, and get **tiered next actions** (self-care → crew medical officer → ground packet). Seeded demo data makes a critical SpO₂ case visible immediately for demos and video.
 
 ---
 
@@ -18,8 +18,8 @@ AetherHealth is an **offline-first Progressive Web App** that lets astronauts lo
 | --- | --- |
 | **Onboarding** | First-run overlay explaining autonomy when Earth is far away |
 | **Dashboard** | Overall severity, critical banner, body map + triage alerts side panel |
-| **3D body map** | Six clickable regions (Head/Eyes, Cardio, Respiratory, MSK, Skin/Immune, Behavioral) with Green/Yellow/Amber/Red glow |
-| **Daily check-in** | Manual vitals form + “Sync mock sensors” + symptom flags + notes |
+| **Body map (SVG)** | Six clickable regions (Head/Eyes, Cardio, Respiratory, MSK, Skin/Immune, Behavioral) with Green/Yellow/Amber/Red glow |
+| **Daily check-in** | Starts from the last check-in; 17 readings with input limits; “Fill from sensors” (simulated wearable sync); symptom flags + notes |
 | **Triage engine** | Threshold bands → severity, hazard tags, plain-language “why,” Tier 1–3 actions |
 | **Trends** | 7/30-day charts for HR, BP, SpO₂, sleep, mood, temp with green-band shading and anomaly callouts |
 | **Guidance library** | Countermeasures, “why this exam,” five-hazards primer, ground-packet export |
@@ -66,7 +66,7 @@ Astronaut input
 1. **Capture** — Astronaut records indicators that matter in space (HR, BP, SpO₂, temp, glucose, sleep, mood, exercise).
 2. **Evaluate** — Rules compare each value to demo threshold bands and assign Green / Yellow / Amber / Red.
 3. **Explain** — Each non-green result is linked to one or more of NASA’s five hazards (radiation, isolation, distance, gravity, closed environment) with short “why this matters” copy.
-4. **Act** — Suggested actions escalate by severity: self-care → consult CMO → queue encrypted-style ground packet for Earth.
+4. **Act** — Suggested actions escalate by severity: self-care → consult CMO → queue ground packet for Earth.
 5. **Stay autonomous** — Everything runs locally; no server required for the MVP demo.
 
 ### Color triage (at a glance)
@@ -80,12 +80,12 @@ Astronaut input
 
 ### Body map
 
-A stylized 3D avatar has hotspot spheres. Region color = worst severity among that region’s indicators (plus symptom flags like rash or SANS visual changes). Tap a region → detail drawer with metrics, hazards, and alert cards.
+A flat SVG body diagram has six tappable regions. Region color = worst severity among that region’s indicators (plus symptom flags like rash or SANS visual changes). Tap a region → detail drawer with metrics, hazards, and alert cards.
 
 ### Data & tech (short)
 
 - **UI:** React + TypeScript + Tailwind  
-- **3D:** React Three Fiber  
+- **Body map:** hand-built SVG (no 3D library)  
 - **Charts:** Recharts  
 - **State:** Zustand  
 - **Persistence:** Dexie (IndexedDB)  
@@ -106,46 +106,20 @@ A stylized 3D avatar has hotspot spheres. Region color = worst severity among th
 
 ---
 
-## 5. 30-second video — overview script
+## 5. 30-second video — official script (from the team playbook)
 
-**Goal:** One clear story: *offline self-assessment → color-coded body map → guided next actions.*
+The global demo video must be **30 seconds or less with English subtitles**. Record our own build at 1920×1080 after **Crew → Reset demo data**, and never press *Fill from sensors* on camera (it gives random values). No NASA logos; no AI-generated media unless watermarked "AI-generated".
 
-**Total runtime:** ~30 seconds  
-**Tone:** Calm, mission-ops, confident — not medical hype  
-**On-screen brand:** Keep **AetherHealth** visible in the header whenever possible
-
-### Shot list + narration
-
-| Time | What to show on screen | What to say |
+| Time | On screen | Voiceover / subtitle |
 | --- | --- | --- |
-| **0–5s** | App open on Dashboard; logo “AetherHealth” in header; seed profile strip (mission day / surface base) | “AetherHealth helps astronauts monitor their own health when Earth is too far away.” |
-| **5–14s** | Pan/orbit the **3D body map**; tap **Respiratory** (or show red/amber glow); open region detail briefly | “Crews log vitals, sleep, and mood — then see status on a color-coded body map linked to NASA’s spaceflight hazards.” |
-| **14–22s** | Scroll or cut to an **alert card** showing Tier 1–3 actions; optional flash of **Check-in** or **Trends** | “When something’s off, the app explains why it matters and what to do next — from self-care to alerting ground.” |
-| **22–30s** | Pull back to Dashboard overall status; optional click **Export ground packet** or show Routines/XP chip | “Fully offline. Mission-ready. AetherHealth — astronaut health, on their terms.” |
+| 0:00–0:02 | Title card: team name, "Karachi" | "We're Team [name], from Karachi." |
+| 0:02–0:05 | Dark screen: "Mars: up to 20 min from a doctor" | "On Mars, help from Earth can be twenty minutes away." |
+| 0:05–0:10 | Analytics with the red **Critical: SpO₂ 88%** banner; title "AetherHealth" | "AetherHealth keeps astronauts medically independent, fully offline." |
+| 0:10–0:20 | **Start guided protocol** (Tier 1→3 ladder); Risk tab "Why this color" showing the NASA-STD-3001 CO₂ source; radiation budget vs 600 mSv; live NASA DONKI space-weather card | "Log vitals, sleep and mood. It shows what's wrong, why, and what to do, built on NASA's five hazards, NASA-STD-3001 limits and live NASA space-weather data." |
+| 0:20–0:27 | Early-warning line on a card; tap **Export to ground**, uplink queue shows transit time | "It catches slow declines early, then packages the data for flight surgeons." |
+| 0:27–0:30 | End card: tagline, "Decision support, not diagnosis" | "Built for the Moon. Ready for Mars." |
 
-### Suggested voiceover (single take, ~75–85 words)
-
-> AetherHealth helps astronauts monitor their own health when Earth is too far away.  
-> Crews log vitals, sleep, and mood — then see status on a color-coded body map tied to NASA’s spaceflight hazards.  
-> When something’s off, the app explains why it matters and guides the next step — from self-care to a ground packet for flight surgeons.  
-> Fully offline. Mission-ready. AetherHealth.
-
-### Recording tips
-
-1. Run `npm run dev` in `~/NASA-SpaceApps` and use a wide browser window (tablet landscape feel).
-2. Use the **seeded critical SpO₂** state on first load so the map already looks dramatic — no need to invent data live.
-3. Prefer **cursor clicks** on body regions and one alert card; avoid racing through every tab.
-4. Soft background music optional; keep narration louder than UI sounds.
-5. End frame: Dashboard with AetherHealth logo + tagline *“Offline astronaut health monitoring.”*
-
-### Optional on-screen text (lower thirds)
-
-- `0s` — AetherHealth  
-- `8s` — Color-coded body map  
-- `16s` — Hazard-aware guidance  
-- `25s` — Offline · Mission-ready  
-
----
+Only mention the DONKI feed if it synced on the recording machine (the card shows "Last synced").
 
 ## 6. Quick demo path (if you need B-roll)
 

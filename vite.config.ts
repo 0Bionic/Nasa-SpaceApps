@@ -3,9 +3,12 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  // `--mode artifact` builds the hosted preview: relative paths, no service worker.
+  base: mode === 'artifact' ? './' : '/',
   plugins: [
     react(),
+    mode !== 'artifact' &&
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
@@ -13,8 +16,8 @@ export default defineConfig({
         name: 'AetherHealth',
         short_name: 'AetherHealth',
         description: 'Offline astronaut health monitoring for deep-space missions',
-        theme_color: '#060F24',
-        background_color: '#060F24',
+        theme_color: '#000000',
+        background_color: '#000000',
         display: 'standalone',
         orientation: 'any',
         start_url: '/',
@@ -41,4 +44,4 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-});
+}));

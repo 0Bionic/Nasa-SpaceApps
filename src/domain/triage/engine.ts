@@ -1,4 +1,4 @@
-import { ACTIONS, actionsFor } from '../countermeasures';
+import { actionsFor } from '../countermeasures';
 import { INDICATORS, INDICATOR_DECIMALS, type ThresholdBand } from '../indicators';
 import { BODY_REGIONS } from '../regions';
 import type {
@@ -107,18 +107,8 @@ export function triageCheckIn(input: Partial<CheckInInput> & CheckInInput): Tria
     triageIndicator(id, VALUE_MAP[id](normalized)),
   );
 
-  // SANS flag → attach ocular screen guidance even if vitals are green
-  if (normalized.symptoms?.sansVisualChanges) {
-    const head = results.find((r) => r.indicatorId === 'mood') ?? results[0];
-    if (head && !head.actions.some((a) => a.id === 'sans_screen')) {
-      head.actions = [ACTIONS.sans_screen, ...head.actions];
-      head.severity = maxSeverity(head.severity, 'amber');
-      head.summary = `${head.summary} · SANS visual-change flag`;
-      head.why = `${head.why} Visual changes can signal Spaceflight-Associated Neuro-ocular Syndrome (SANS).`;
-      if (!head.hazards.includes('gravity')) head.hazards = [...head.hazards, 'gravity'];
-    }
-  }
-
+  // The SANS vision flag is handled at body-region level (Head & Eyes → amber, see
+  // regionSeverity) so it no longer mislabels an unrelated reading such as mood.
   return results;
 }
 

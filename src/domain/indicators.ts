@@ -221,9 +221,11 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
     hazards: ['radiation'],
     regions: ['skin_immune', 'head_eyes'],
     bands: [
-      { severity: 'green', min: 0, max: 2.0 },
-      { severity: 'yellow', min: 2.01, max: 5.0 },
-      { severity: 'amber', min: 5.01, max: 10.0 },
+      // NASA design limits for GCR dose (OCHMO standards overview): below 0.8 mSv/day on
+      // planetary surfaces and 1.3 mSv/day in free space. Bands above 1.3 are illustrative.
+      { severity: 'green', min: 0, max: 0.8 },
+      { severity: 'yellow', min: 0.81, max: 1.3 },
+      { severity: 'amber', min: 1.31, max: 10.0 },
       { severity: 'red', min: 10.01 },
     ],
   },
@@ -238,10 +240,13 @@ export const INDICATORS: Record<HealthIndicatorId, IndicatorDefinition> = {
     hazards: ['closed_environment'],
     regions: ['resp', 'behavioral'],
     bands: [
-      { severity: 'green', min: 0, max: 2000 },
-      { severity: 'yellow', min: 2001, max: 3500 },
-      { severity: 'amber', min: 3501, max: 5000 },
-      { severity: 'red', min: 5001 },
+      // NASA-STD-3001 Vol 2 [V2 6004]: 1-hour average ppCO2 ≤ 3 mmHg. OCHMO-TB-004 / ISS data:
+      // 7-day average < 2.5 mmHg keeps headache risk < 1%; headache, fatigue, malaise 2.8–4.5 mmHg.
+      // ppm assumes a 1 atm (760 mmHg) cabin.
+      { severity: 'green', min: 0, max: 3290 }, // ≤ 2.5 mmHg
+      { severity: 'yellow', min: 3291, max: 3950 }, // ≤ 3.0 mmHg (standard limit)
+      { severity: 'amber', min: 3951, max: 5920 }, // 3.0–4.5 mmHg
+      { severity: 'red', min: 5921 }, // > 4.5 mmHg
     ],
   },
   stress: {

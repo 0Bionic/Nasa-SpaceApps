@@ -214,14 +214,15 @@ export function mockSensorSync(): CheckInInput {
     glucose: 90 + Math.floor(Math.random() * 25),
     sleepH: Number((6 + Math.random() * 2.5).toFixed(1)),
     mood: 5 + Math.floor(Math.random() * 4),
-    exerciseMin: 0,
-    radiationMsv: Number((0.25 + Math.random() * 0.4).toFixed(2)),
+    // Exercise is logged from the ARED/cycle session, not a wake sensor; keep a plausible value.
+    exerciseMin: 45 + Math.floor(Math.random() * 20),
+    radiationMsv: Number((0.4 + Math.random() * 0.3).toFixed(2)),
     cabinCo2Ppm: Math.round(700 + Math.random() * 900),
     stress: 3 + Math.floor(Math.random() * 4),
     fatigue: 3 + Math.floor(Math.random() * 4),
     teamwork: 6 + Math.floor(Math.random() * 4),
     dizziness: Math.floor(Math.random() * 3),
-    resistiveMin: 0,
+    resistiveMin: 30 + Math.floor(Math.random() * 15),
     fluidL: Number((1.8 + Math.random() * 1.2).toFixed(1)),
     notes: 'Synced from mock wearable / cuff suite + cabin monitors.',
     symptoms: {

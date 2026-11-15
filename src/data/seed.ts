@@ -32,8 +32,9 @@ function buildHistory(profileId: string): CheckInRecord[] {
       ),
       mood: Math.round(clamp(8 - fatigueTrend * 3 - (day % 9 === 0 ? 2 : 0), 2, 10)),
       exerciseMin: day % 4 === 0 ? 20 : day % 3 === 0 ? 35 : 55,
-      radiationMsv: Number((1.2 + fatigueTrend * 0.2 + (day % 11 === 0 ? 1.6 : 0)).toFixed(2)), // lunar-surface background ≈1.37 mSv/d (Chang’e-4)
-      cabinCo2Ppm: Math.round(750 + fatigueTrend * 1200 + (day % 6) * 40),
+      // Inside a shielded lunar habitat (design limit 0.8 mSv/day); occasional elevated day.
+      radiationMsv: Number((0.5 + fatigueTrend * 0.12 + (day % 11 === 0 ? 0.55 : 0)).toFixed(2)),
+      cabinCo2Ppm: Math.round(1400 + fatigueTrend * 1300 + (day % 6) * 60),
       stress: Math.round(clamp(3 + fatigueTrend * 4 + (day % 8 === 0 ? 2 : 0), 1, 10)),
       fatigue: Math.round(clamp(3 + fatigueTrend * 4, 1, 10)),
       teamwork: Math.round(clamp(9 - fatigueTrend * 3 - (day % 10 === 0 ? 2 : 0), 1, 10)),
@@ -56,16 +57,22 @@ function buildHistory(profileId: string): CheckInRecord[] {
     };
 
     if (day === 0) {
+      // Demo scenario: one critical reading, one warning, a few cautions (avoids alarm fatigue).
       input.spo2 = 88;
-      input.sleepH = 4.2;
-      input.mood = 4;
-      input.cabinCo2Ppm = 4200;
-      input.radiationMsv = 1.4;
-      input.stress = 7;
-      input.fatigue = 8;
-      input.notes = 'Demo critical path: low SpO₂ after cabin drill; elevated CO₂.';
+      input.sleepH = 4.6;
+      input.mood = 6;
+      input.cabinCo2Ppm = 3600;
+      input.radiationMsv = 0.62;
+      input.stress = 6;
+      input.fatigue = 6;
+      input.exerciseMin = 50;
+      input.resistiveMin = 35;
+      input.teamwork = 6;
+      input.dizziness = 1;
+      input.fluidL = 2.2;
+      input.notes = 'Low SpO₂ on wake after a short sleep. Mild chest tightness. Rechecked finger placement.';
       input.regionDiscomfort = {
-        resp: { level: 7, note: 'Chest tightness during drill' },
+        resp: { level: 4, note: 'Mild chest tightness on wake' },
       };
     }
 

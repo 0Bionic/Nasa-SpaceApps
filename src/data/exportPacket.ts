@@ -80,7 +80,7 @@ export async function buildGroundPacket() {
   return {
     ...bundle,
     aetherMeta: {
-      encryption: 'AES-GCM notes field (demo passphrase)',
+      encryption: 'Notes field sealed with AES-GCM using a demo passphrase (not production key management)',
       sealedNotes,
     },
   };
@@ -122,6 +122,11 @@ export async function downloadGroundPacket() {
   const packet = await buildGroundPacket();
   // Queue a simulated uplink so the crew sees transit time and earliest reply.
   useUplinks.getState().enqueue((await getActiveProfile()).environment);
+  if (import.meta.env.VITE_ARTIFACT) {
+    // The sandboxed preview blocks downloads: show the packet with a Copy button instead.
+    window.dispatchEvent(new CustomEvent('aether:packet', { detail: JSON.stringify(packet, null, 2) }));
+    return;
+  }
   const blob = new Blob([JSON.stringify(packet, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

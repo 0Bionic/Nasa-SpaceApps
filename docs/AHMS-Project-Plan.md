@@ -61,7 +61,7 @@ The software runs fully offline on habitat or spacecraft tablets so distance fro
 1. Red threshold breach (e.g., SpO₂ critically low, high fever).
 2. Pulsing red on affected body region + audio-visual alert banner.
 3. Guidance shows Tier 2 (consult CMO) and Tier 3 (queue ground packet).
-4. Astronaut can export encrypted JSON/FHIR-lite bundle for later uplink.
+4. Astronaut can export a FHIR-style JSON bundle, packaged for later uplink (notes sealed with a demo key only).
 
 ### 3.3 Weekly review path
 
@@ -114,7 +114,7 @@ The software runs fully offline on habitat or spacecraft tablets so distance fro
 | --- | --- |
 | App type | Progressive Web App (tablet-first) |
 | UI | Vite + React 18 + TypeScript + Tailwind CSS |
-| 3D body map | React Three Fiber + drei |
+| Body map | Interactive SVG (no 3D library) |
 | Charts | Recharts |
 | Client state | Zustand |
 | Persistence | Dexie (IndexedDB) |

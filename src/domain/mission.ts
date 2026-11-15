@@ -16,6 +16,8 @@ export interface MissionProfile {
   /** Measured daily background dose for comparison, when a measurement exists. */
   radiationBaseline: { msvPerDay: number; source: SourceId; label: string } | null;
   radiationNote: string;
+  /** NASA habitat design limit for cosmic-ray dose (OCHMO standards overview). */
+  designLimit: string;
   /** What changes for the crew at this destination. */
   focus: string;
 }
@@ -31,6 +33,7 @@ export const MISSION_PROFILES: Record<MissionEnvironment, MissionProfile> = {
     delaySeconds: 1,
     delayLabel: '< 1 s',
     radiationBaseline: null,
+    designLimit: 'LEO limits apply',
     radiationNote: 'Earth’s magnetic field still blocks much of the radiation, so doses are lower than beyond orbit.',
     focus: 'Ground support is close: escalate early and use real-time flight-surgeon calls.',
   },
@@ -40,6 +43,7 @@ export const MISSION_PROFILES: Record<MissionEnvironment, MissionProfile> = {
     delaySeconds: 1.3,
     delayLabel: '1.3 s',
     radiationBaseline: { msvPerDay: 1.37, source: 'change4-lnd', label: 'Chang’e-4, lunar surface' },
+    designLimit: '< 0.8 mSv/day',
     radiationNote: 'No magnetic field or atmosphere: background dose is several times higher than in orbit.',
     focus: 'Short delay but evacuation takes days: the CMO handles most issues on site.',
   },
@@ -49,6 +53,7 @@ export const MISSION_PROFILES: Record<MissionEnvironment, MissionProfile> = {
     delaySeconds: 1.3,
     delayLabel: '1.3 s',
     radiationBaseline: { msvPerDay: 1.37, source: 'change4-lnd', label: 'Chang’e-4, lunar surface' },
+    designLimit: '< 0.8 mSv/day',
     radiationNote: 'Thinner shielding than a base; watch for solar particle events and return to shelter.',
     focus: 'Far from the base medical kit: monitor dizziness and fatigue before driving.',
   },
@@ -58,6 +63,7 @@ export const MISSION_PROFILES: Record<MissionEnvironment, MissionProfile> = {
     delaySeconds: 22 * 60,
     delayLabel: 'up to 22 min',
     radiationBaseline: { msvPerDay: 1.84, source: 'msl-rad', label: 'MSL RAD, cruise to Mars' },
+    designLimit: '< 1.3 mSv/day',
     radiationNote: 'Highest sustained dose of any profile; the career budget matters most here.',
     focus: 'Earth cannot answer in time: the crew decides, and the ground packet waits for a comm window.',
   },
@@ -163,4 +169,39 @@ export function compoundAlerts(c: CheckInInput): CompoundAlert[] {
     });
   }
   return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* EVA / vehicle-operation readiness                                   */
+/* ------------------------------------------------------------------ */
+
+export type Readiness = 'go' | 'caution' | 'no-go';
+
+/** Readings that matter before a spacewalk or driving a rover, with why. */
+const READINESS_CHECKS: { id: Parameters<typeof severityFor>[0]; field: keyof CheckInInput; why: string }[] = [
+  { id: 'spo2', field: 'spo2', why: 'oxygen saturation (hypoxia risk in the suit)' },
+  { id: 'dizziness', field: 'dizziness', why: 'dizziness / motion sickness (coordination)' },
+  { id: 'fatigue', field: 'fatigue', why: 'fatigue (attention and reaction time)' },
+  { id: 'sleep_h', field: 'sleepH', why: 'sleep (alertness)' },
+  { id: 'temp', field: 'temp', why: 'core temperature (possible illness)' },
+  { id: 'hr', field: 'hr', why: 'heart rate (workload in the suit)' },
+  { id: 'bp_sys', field: 'bpSys', why: 'blood pressure' },
+];
+
+/**
+ * Go / caution / no-go for EVA or vehicle operations, from the latest check-in.
+ * App heuristic (NASA lists spacewalk performance and sensorimotor function as
+ * risks); a real decision is the flight surgeon's.
+ */
+export function evaReadiness(c: CheckInInput, spaceWeatherAlert = false) {
+  const reasons: { level: Readiness; text: string }[] = [];
+  for (const chk of READINESS_CHECKS) {
+    const sev = severityFor(chk.id, c[chk.field] as number);
+    if (sev === 'amber' || sev === 'red') reasons.push({ level: 'no-go', text: `Off-nominal ${chk.why}` });
+    else if (sev === 'yellow') reasons.push({ level: 'caution', text: `Borderline ${chk.why}` });
+  }
+  if (c.symptoms?.orthostaticDizziness) reasons.push({ level: 'caution', text: 'Dizzy on standing reported' });
+  if (spaceWeatherAlert) reasons.push({ level: 'no-go', text: 'Recent solar particle event or X-class flare (NASA DONKI)' });
+  const status: Readiness = reasons.some((r) => r.level === 'no-go') ? 'no-go' : reasons.length ? 'caution' : 'go';
+  return { status, reasons };
 }

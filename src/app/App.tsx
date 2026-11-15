@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { PacketModal } from '@/components/PacketModal';
+
+// The hosted preview runs in a sandboxed frame without URL routing, so it uses an in-memory router.
+const Router = import.meta.env.VITE_ARTIFACT ? MemoryRouter : BrowserRouter;
 import { BrandMark, Layout } from './Layout';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
 import { CheckInPage } from '@/features/checkin/CheckInPage';
@@ -27,9 +31,10 @@ export function App() {
   const profile = useAppStore((s) => s.profile);
   const init = useAppStore((s) => s.init);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [initError, setInitError] = useState('');
 
   useEffect(() => {
-    void init();
+    init().catch((e: unknown) => setInitError(e instanceof Error ? e.message : String(e)));
   }, [init]);
 
   useEffect(() => {
@@ -44,6 +49,20 @@ export function App() {
     }
   }, [ready, profile?.remindersEnabled]);
 
+  if (initError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6 text-center">
+        <div role="alert">
+          <BrandMark size={40} />
+          <p className="mt-3 max-w-md text-sm text-dust">
+            Local storage is unavailable in this browser, so health records cannot be loaded. Try a normal (non-private)
+            window. ({initError})
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   if (!ready) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -56,7 +75,8 @@ export function App() {
   }
 
   return (
-    <BrowserRouter>
+    <Router>
+      <PacketModal />
       {showOnboarding && <Onboarding onDone={() => setShowOnboarding(false)} />}
       <Routes>
         <Route element={<Layout />}>
@@ -72,6 +92,6 @@ export function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </Router>
   );
 }

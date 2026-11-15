@@ -17,13 +17,11 @@ export function MissionProfileStrip({ environment, avgDose }: { environment: Mis
       <Cell label="Gravity" value={p.gravity} sub="Drives bone, vestibular and fluid-shift risks" />
       <Cell label="Signal delay (one way)" value={p.delayLabel} sub={p.delaySeconds > 60 ? 'No real-time ground support' : 'Near real-time ground support'} />
       <Cell
-        label="Radiation background"
-        value={base ? `≈ ${base.msvPerDay} mSv/day` : 'Lower (in orbit)'}
-        sub={
-          base
-            ? `${base.label}${avgDose != null ? ` · yours ${avgDose.toFixed(2)}` : ''} · ${SOURCES[base.source].org}`
-            : p.radiationNote
-        }
+        label="Radiation design limit (habitat)"
+        value={p.designLimit}
+        sub={`${avgDose != null ? `Yours ${avgDose.toFixed(2)} mSv/day · ` : ''}${
+          base ? `unshielded ≈${base.msvPerDay} (${base.label}, ${SOURCES[base.source].org})` : p.radiationNote
+        }`}
       />
     </section>
   );
@@ -120,5 +118,39 @@ export function UplinkQueue() {
         })}
       </ul>
     </div>
+  );
+}
+
+/** Go / caution / no-go for EVA or rover driving, from the latest check-in. */
+export function ReadinessCard({ status, reasons }: { status: 'go' | 'caution' | 'no-go'; reasons: { level: string; text: string }[] }) {
+  const tone = status === 'go' ? SEV_TONE.green : status === 'caution' ? SEV_TONE.yellow : SEV_TONE.red;
+  const label = status === 'go' ? 'GO' : status === 'caution' ? 'CAUTION' : 'NO-GO';
+  return (
+    <section aria-labelledby="readiness" className="n-card flex flex-col gap-3 p-5 sm:flex-row sm:items-start">
+      <div className="shrink-0">
+        <p className="text-[11px] text-n-muted">EVA &amp; vehicle readiness</p>
+        <p id="readiness" className={`font-display text-3xl font-semibold ${tone.text}`}>
+          {label}
+        </p>
+      </div>
+      <div className="min-w-0 flex-1 space-y-1.5 text-[13px]">
+        {reasons.length === 0 ? (
+          <p className="text-n-muted">Oxygen, balance, fatigue, sleep, temperature, heart rate and blood pressure are all nominal.</p>
+        ) : (
+          <ul className="space-y-1">
+            {reasons.slice(0, 4).map((r) => (
+              <li key={r.text} className="flex gap-2">
+                <span className={r.level === 'no-go' ? SEV_TONE.red.text : SEV_TONE.yellow.text}>●</span>
+                {r.text}
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-[11px] text-n-muted">
+          App heuristic from the latest check-in, for NASA&rsquo;s spacewalk and sensorimotor risks. The flight surgeon makes the
+          real call.
+        </p>
+      </div>
+    </section>
   );
 }

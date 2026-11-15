@@ -15,8 +15,10 @@ import { bandFor, bandRangeText, severityFor, triageCheckIn, triageIndicator } f
 import { INDICATORS } from '@/domain/indicators';
 import { HAZARDS } from '@/domain/hazards';
 import { forecast, forecastText } from '@/domain/forecast';
-import { compoundAlerts } from '@/domain/mission';
-import { CompoundAlertsPanel, MissionProfileStrip, UplinkQueue } from './MissionPanels';
+import { compoundAlerts, evaReadiness } from '@/domain/mission';
+import { summarizeSpaceWeather, useSpaceWeather } from '@/data/spaceWeather';
+import { CompoundAlertsPanel, MissionProfileStrip, ReadinessCard, UplinkQueue } from './MissionPanels';
+import { SpaceWeatherCard } from './SpaceWeatherCard';
 import {
   BASIS_LABEL,
   CAREER_RADIATION_LIMIT_MSV,
@@ -119,7 +121,7 @@ export function TrendsPage() {
   const featured = useMemo(() => {
     const pool = summaries.filter((s) => category === 'all' || METRIC_META[s.id].category === category);
     // Worst first; among equals, readings trending out of range (early warnings) come next.
-    const rank = (s: IndicatorSummary) => SEVERITY_RANK[s.severity] * 2 + (s.forecast?.kind === 'leaving' ? 1 : 0);
+    const rank = (s: IndicatorSummary) => SEVERITY_RANK[s.severity] * 2 + (s.forecast?.kind === 'leaving' || s.baseline?.unusual ? 1 : 0);
     return [...pool].sort((a, b) => rank(b) - rank(a)).slice(0, 3);
   }, [summaries, category]);
 
@@ -163,6 +165,8 @@ export function TrendsPage() {
   }, [data]);
 
   const latestRecord = history[0];
+  const spaceWeather = useSpaceWeather((s) => s.data);
+  const swAlert = spaceWeather ? summarizeSpaceWeather(spaceWeather).alert !== null : false;
   const critical = useMemo(() => (latestRecord ? triageCheckIn(latestRecord).filter((r) => r.severity === 'red') : []), [latestRecord]);
   const detailForecast = useMemo(() => forecast(metric, history.slice(0, 7).reverse().map((c) => valueOf(c, metric))), [history, metric]);
   const triage = latestRecord ? triageIndicator(metric, valueOf(latestRecord, metric)) : null;
@@ -331,9 +335,13 @@ export function TrendsPage() {
         />
       )}
 
+      {latestRecord && audience === 'mission' && <ReadinessCard {...evaReadiness(latestRecord, swAlert)} />}
+
       {latestRecord && <CompoundAlertsPanel alerts={compoundAlerts(latestRecord)} />}
 
       {profile && audience === 'mission' && <RadiationBudgetCard doses={history.slice(0, 30).map((c) => c.radiationMsv)} missionDay={profile.missionDay} />}
+
+      {audience === 'mission' && <SpaceWeatherCard />}
 
       {/* ---------- Detail panel ---------- */}
       <section
@@ -702,6 +710,13 @@ function IndicatorCard({ s, active, onSelect }: { s: IndicatorSummary; active: b
         {s.deltaPct == null ? 'No prior data' : `${s.deltaPct >= 0 ? '+' : '−'}${Math.abs(s.deltaPct).toFixed(1)}% vs 7-check-in mean`}
       </span>
       <Sparkline series={s.series} color={off ? tone.hex : NEON} />
+      {s.baseline?.unusual && (
+        <span className="flex items-start gap-1.5 text-[11px] leading-snug text-n-neon">
+          <NIcon name="chart" size={13} className="mt-px shrink-0" />
+          Unusual for you: {s.baseline.z > 0 ? 'above' : 'below'} your usual {formatValue(s.id, s.baseline.mean)} ±{' '}
+          {formatValue(s.id, s.baseline.sd)} {def.unit.startsWith('/') ? '' : def.unit}
+        </span>
+      )}
       {s.forecast && s.forecast.kind !== 'recovering' && (
         <span className={`flex items-start gap-1.5 text-[11px] leading-snug ${s.forecast.kind === 'leaving' ? 'text-n-amber' : tone.text}`}>
           <NIcon name="bolt" size={13} className="mt-px shrink-0" />

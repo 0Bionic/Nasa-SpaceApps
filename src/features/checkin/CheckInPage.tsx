@@ -71,7 +71,15 @@ const STEP: Partial<Record<HealthIndicatorId, number>> = {
   radiation_msv: 0.01,
   fluid_l: 0.1,
 };
-const LIMITS: Partial<Record<HealthIndicatorId, [number, number]>> = {
+/** Physically plausible input range for every reading; values outside block saving. */
+const LIMITS: Record<HealthIndicatorId, [number, number]> = {
+  hr: [25, 250],
+  bp_sys: [50, 260],
+  bp_dia: [30, 160],
+  temp: [30, 43],
+  glucose: [20, 600],
+  sleep_h: [0, 24],
+  exercise_min: [0, 600],
   mood: [1, 10],
   stress: [1, 10],
   fatigue: [1, 10],
@@ -91,7 +99,19 @@ const SYMPTOMS: { key: keyof SymptomFlags; label: string; hint: string }[] = [
 ];
 
 export function CheckInPage() {
-  const [form, setForm] = useState<CheckInInput>(defaults);
+  const latest = useAppStore((s) => s.latest);
+  // Start from the last check-in, never from made-up "perfect" values, so an unmeasured save
+  // cannot quietly log a nominal day.
+  const startValues = (): CheckInInput => {
+    if (!latest) return defaults;
+    const next = { ...defaults } as CheckInInput & Record<string, unknown>;
+    for (const id of Object.keys(INDICATOR_FIELD) as HealthIndicatorId[]) {
+      const f = INDICATOR_FIELD[id];
+      next[f] = latest[f] as never;
+    }
+    return next;
+  };
+  const [form, setForm] = useState<CheckInInput>(startValues);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [synced, setSynced] = useState(false);
@@ -130,6 +150,19 @@ export function CheckInPage() {
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const bad = (Object.keys(LIMITS) as HealthIndicatorId[]).filter((id) => {
+      const v = form[INDICATOR_FIELD[id]] as number;
+      const [lo, hi] = LIMITS[id];
+      return !Number.isFinite(v) || v < lo || v > hi;
+    });
+    if (bad.length) {
+      setError(
+        `Check these readings before saving: ${bad
+          .map((id) => `${INDICATORS[id].label} (${LIMITS[id][0]}–${LIMITS[id][1]} ${INDICATORS[id].unit})`)
+          .join(', ')}.`,
+      );
+      return;
+    }
     setSaving(true);
     setError('');
     try {
@@ -169,7 +202,7 @@ export function CheckInPage() {
             type="button"
             className="btn text-dust hover:text-star"
             onClick={() => {
-              setForm(defaults);
+              setForm(startValues());
               setSynced(false);
             }}
           >
@@ -182,11 +215,13 @@ export function CheckInPage() {
         <MedicalDisclaimer />
       </div>
 
-      {synced && (
-        <p className="mt-4 text-sm text-dust" role="status">
-          Filled from mock sensors. Verify values before saving.
-        </p>
-      )}
+      <p className="mt-4 text-sm text-dust" role="status">
+        {synced
+          ? 'Filled from simulated wearable and cabin sensors. Verify values before saving.'
+          : latest
+            ? 'Starting values are from your last check-in. Measure and update each reading before saving.'
+            : 'Enter each reading after measuring.'}
+      </p>
 
       {GROUPS.map((group) => (
         <fieldset key={group.title} className="mt-8">
@@ -359,7 +394,7 @@ function InstrumentRow({
   const sev = valid ? severityFor(id, value) : 'green';
   const inputId = `in-${id}`;
   const hintId = `hint-${id}`;
-  const [min, max] = LIMITS[id] ?? [0, 999];
+  const [min, max] = LIMITS[id];
 
   return (
     <div className="grid gap-x-6 gap-y-2 px-4 py-4 sm:grid-cols-[minmax(0,1fr)_132px_minmax(0,1.1fr)] sm:items-center">
